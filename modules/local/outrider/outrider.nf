@@ -1,4 +1,4 @@
-process BamToJunc {
+process Outrider {
 
     label 'slurm'
 
