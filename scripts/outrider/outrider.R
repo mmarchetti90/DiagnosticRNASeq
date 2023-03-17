@@ -39,7 +39,8 @@ runOutrider <- function(params, cnts) {
   ods <- filterExpression(ods, minCounts = T, fpkmCutoff = params[2])
   
   # Run full outrider pipeline (control, fit model, calculate P-values)
-  ods <- OUTRIDER(ods, BPPARAM = threads)
+  #ods <- OUTRIDER(ods, BPPARAM = threads)
+  ods <- OUTRIDER(ods)
   
   # Save RDS object
   saveRDS(ods, file = "outrider_analysis.rds")
