@@ -93,6 +93,20 @@ process MergeCounts {
 
     done
 
+    if (( \$control_counts_num > 0 ))
+    then
+
+        for file in ${control_gene_counts_dir}/*\${file_pattern}
+        do
+
+            sample_name=\$(basename \$file)
+            sample_name=\${sample_name%\$file_pattern*}
+            header="\${header}\t\${sample_name}"
+
+        done
+
+    fi
+
     touch \${output_file}
     echo -e "\${header}" >> \${output_file}
     cat merged_temp_unique.txt >> \${output_file}
