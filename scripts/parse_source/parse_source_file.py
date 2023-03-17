@@ -24,7 +24,10 @@ def listFastqFiles(b_p, src_dt):
             
         else:
             
-            read2 = '/mock/path/to/mock.fastq'
+            read2 = 'mock.fastq'
+            with open('mock.fastq', 'w') as mock_file:
+
+                mock_file.write('Empty')
         
         # Check that read1 and read2 exist and add full path to file name
         if exists(read1) and (exists(read2) if read2 != '/mock/path/to/mock.fastq' else True):
