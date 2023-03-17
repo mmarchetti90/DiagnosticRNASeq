@@ -46,7 +46,7 @@ runOutrider <- function(params, cnts) {
   saveRDS(ods, file = "outrider_analysis.rds")
   
   # Extracting results
-  analysis <- results(ods, padjCutoff = as.integer(params[3]))
+  analysis <- results(ods, padjCutoff = as.numeric(params[3]))
   write.table(analysis, "aberrant_expression.tsv", row.names = FALSE, sep = "\t")
   
 }
