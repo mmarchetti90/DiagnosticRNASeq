@@ -11,7 +11,7 @@ process RunSTAR {
   tuple val(sample_id), path(read1), path(read2)
 
   output:
-  tuple val("${sample_id}"), path("${sample_id}_Aligned.sortedByCoord.out.bam"), val("${read2}"), emit: bam_files
+  tuple val("${sample_id}"), path("${sample_id}_Aligned.sortedByCoord.out.bam"), emit: bam_files
   path "${sample_id}_Unmapped.out.mate1"
   path "${sample_id}_ReadsPerGene.out.tab", emit: gene_counts
   path "${sample_id}_Log.{final.out,out,progress.out}", emit: star_reports
