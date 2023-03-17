@@ -56,12 +56,12 @@ workflow RNA_DIAGNOSTIC {
 
   // Control cohort data
   Channel
-    .fromPath(control_cohort_junc_dir)
+    .fromPath("${params.control_cohort_junc_dir}")
     .ifEmpty("${projectDir}/modules")
     .set{ control_junc_dir }
 
   Channel
-    .fromPath(control_cohort_counts_dir)
+    .fromPath("${params.control_cohort_counts_dir}")
     .ifEmpty("${projectDir}/modules")
     .set{ control_gene_counts_dir }
   
