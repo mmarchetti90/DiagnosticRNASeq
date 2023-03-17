@@ -9,7 +9,7 @@ N.B. The source file has to be in the same folder as the fastq files or the fast
 
 ### ---------------------------------------- ###
 
-def listFastqFiles(src_dt):
+def listFastqFiles(b_p, src_dt):
     
     reads_list = ['SampleID\tFile1\tFile2']
     
@@ -33,6 +33,17 @@ def listFastqFiles(src_dt):
             read2 = abspath(read2)
         
             reads_list.append(sample_id + '\t' + read1 + '\t' + read2)
+
+        elif exists(f'{b_p}/{read1}') and (exists(f'{b_p}/{read2}') if read2 != '/mock/path/to/mock.fastq' else True):
+            
+            read1 = abspath(f'{b_p}/{read1}')
+            read2 = abspath(f'{b_p}/{read2}')
+        
+            reads_list.append(sample_id + '\t' + read1 + '\t' + read2)
+
+        else:
+
+            pass
     
     if len(reads_list) == 1:
         
@@ -50,6 +61,7 @@ def listFastqFiles(src_dt):
 
 import pandas as pd
 
+from os import readlink
 from os.path import abspath, exists
 from sys import argv
 from sys import exit as sys_exit
@@ -77,5 +89,16 @@ else:
     source_data = pd.read_csv(source_file_path, sep='\t', header=None, skip_blank_lines=True)
     source_data.columns = ['Sample_ID', 'Data_File']
 
+# Get absolute path of the source file (same place where reads should be)
+try: # Checking id source file is a symlink
+
+    base_path = abspath(readlink(source_file_path))
+
+except:
+
+    base_path = abspath(source_file_path)
+
+base_path = '/'.join(base_path.split('/')[:-1])
+
 # Making a list of fastq files to be aligned/counted
-listFastqFiles(source_data)
+listFastqFiles(base_path, source_data)
