@@ -6,7 +6,7 @@ N.B. This script was modified for compatibility with python 3
 
 import numpy as np
 import sys
-import pystan
+import stan as pystan
 import dirichlet_multinomial
 import gzip
 
