@@ -87,7 +87,6 @@ leafcutter
 SPOT
 
 	https://github.com/BennyStrobes/SPOT
-	Copy dirichlet_multinomial.stan and dirichlet_multinomial.py to ./scripts/spot
 
 OUTRIDER (included in the docker image)
 
@@ -101,5 +100,4 @@ OUTRIDER (included in the docker image)
 
 - OUTRIDER is included in the docker image;
 
-- SPOT does not currently work since it still uses pystan 2, while the docker image contains pystan 3;
-
+- SPOT was updated to use pystan 3;
