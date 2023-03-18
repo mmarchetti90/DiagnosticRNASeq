@@ -91,7 +91,7 @@ RUN pip3 install --upgrade pip setuptools && \
         matplotlib \
         numpy \
         pandas \
-        pystan \
+        pystan==2.19.1.1 \
         qtl \
         scikit-learn \
         scipy \
