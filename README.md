@@ -100,3 +100,6 @@ OUTRIDER (included in the docker image)
 - Python code from leafcutterMD (leafcutter_cluster.py) and SPOT (spot.py) was updated for Python3 compatibility;
 
 - OUTRIDER is included in the docker image;
+
+- SPOT does not currently work since it still uses pystan 2, while the docker image contains pystan 3;
+
