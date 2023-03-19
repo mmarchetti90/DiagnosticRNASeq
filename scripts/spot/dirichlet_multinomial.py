@@ -51,7 +51,7 @@ def compute_alphas_intercept_only_multi_conc(betas, conc_param):
 
 ### ---------------------------------------- ###
 
-def dirichlet_multinomial_fit(y, seed, stan_code, cpus):
+def dirichlet_multinomial_fit(y, seed, stan_code, chains):
 
 	# Fixed parameters (provide relaxed priors to add optimization)
 	concShape = 1.0001
@@ -69,7 +69,7 @@ def dirichlet_multinomial_fit(y, seed, stan_code, cpus):
 	DM_GLM = pystan.build(stan_code, data=data, random_seed=seed)
 
 	# Fit GLM using pystan
-	op = DM_GLM.sample(num_chains=cpus)
+	op = DM_GLM.sample(num_chains=chains)
 	
 	# Convert betas from simplex space to real space
 	betas = correct_betas(op['beta_raw'], op['beta_scale'], K, P)
@@ -151,14 +151,14 @@ def generate_background_mahalanobis_distances(alpha, num_samples, num_reads):
 
 ### ---------------------------------------- ###
 
-def run_dm_outlier_analysis(X, num_background_samples, num_simulated_reads, seed, stan_code, cpus):
+def run_dm_outlier_analysis(X, num_background_samples, num_simulated_reads, seed, stan_code, chains):
 
 	#########################################################
 	# Fit Dirichlet multinomial based on samples
 	#########################################################
 
 	# Fit dirichlet multinomial to X (return dm parameter alpha)
-	alpha = dirichlet_multinomial_fit(X, seed, stan_code, cpus)
+	alpha = dirichlet_multinomial_fit(X, seed, stan_code, chains)
 
 	#########################################################
 	# Compute mahalanobis distance (MD) for all observed samples
