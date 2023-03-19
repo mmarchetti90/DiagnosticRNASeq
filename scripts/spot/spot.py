@@ -155,7 +155,7 @@ def outlier_calling_print_helper(arr, all_samples, t, cluster_id):
 
 ### ---------------------------------------- ###
 
-def call_splicing_outliers_shell(stan_file, out_prefix, cluster_jxn_data_structure, sample_names, num_background_samples, num_simulated_reads, seed, cpus):
+def call_splicing_outliers_shell(stan_file, out_prefix, cluster_jxn_data_structure, sample_names, num_background_samples, num_simulated_reads, seed, chains):
 
 	# Seed for random number generator used in simulating samples for mahalanobis distance empirical distribution
 	np.random.seed(seed)
@@ -188,7 +188,7 @@ def call_splicing_outliers_shell(stan_file, out_prefix, cluster_jxn_data_structu
 		#   3. alpha: vector of length num_jxns which defines the fitted dirichlet multinomial distribution
 		try:
 
-			mahalanobis_distances, pvalues, alpha = dirichlet_multinomial.run_dm_outlier_analysis(X, num_background_samples, num_simulated_reads, seed, stan_code, cpus)
+			mahalanobis_distances, pvalues, alpha = dirichlet_multinomial.run_dm_outlier_analysis(X, num_background_samples, num_simulated_reads, seed, stan_code, chains)
 
 			####################################################################
 			# Print results to output file
@@ -219,13 +219,13 @@ def main(options):
 	num_background_samples = options.numbackgroundsamples
 	num_simulated_reads = options.numsimulatedreads
 	seed = options.seed
-	cpus = options.cpus
+	chains = options.chains
 
 	# Load in data into dictionary structure where keys are cluster ids and values are junction count matrices for that cluster
 	cluster_jxn_data_structure, sample_names = load_in_junction_count_data(junc_file, max_junctions)
 
 	# Shell to call splicing outliers
-	call_splicing_outliers_shell(stan_file, out_prefix, cluster_jxn_data_structure, sample_names, num_background_samples, num_simulated_reads, seed, cpus)
+	call_splicing_outliers_shell(stan_file, out_prefix, cluster_jxn_data_structure, sample_names, num_background_samples, num_simulated_reads, seed, chains)
 
 ### ---------------------------------------- ###
 
@@ -256,8 +256,8 @@ if __name__ == "__main__":
 	parser.add_option("-s", "--seed", type="int", dest="seed", default=1,
 		help="Seed used for random number generator in both optimization and generating random samples for a mahalanobis distance empirical distribution")
 
-	parser.add_option("-c", "--cpus", type="int", dest="cpus", default=1,
-		help="Number of cores to use for pystan")
+	parser.add_option("-c", "--chains", type="int", dest="chains", default=1,
+		help="Number of chains to use for pystan")
 
 	(options, args) = parser.parse_args()
 
