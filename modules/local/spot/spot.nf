@@ -13,7 +13,7 @@ process Spot {
     path "spot_md.txt"
 
     """
-    python3 ${scripts_dir}/spot/spot.py --juncfile ${junc_files}
+    python3 ${scripts_dir}/spot/spot.py --juncfile ${junc_files} --chains 4
     """
 
 }
