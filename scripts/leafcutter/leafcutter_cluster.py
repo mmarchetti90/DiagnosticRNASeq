@@ -2,6 +2,7 @@
 
 '''
 N.B. This script was modified for compatibility with python 3
+Also, .replace(':', '_') was added to chrom variables (lines 52, 151) to account for chromosome names such as HLA-A*01:11N or HLA-DQB1*06:01:01
 '''
 
 import sys
@@ -48,6 +49,7 @@ def pool_junc_reads(flist, options):
                 sys.stderr.write("Error in %s \n" % lib)
                 continue
             chrom, A, B, dot, counts, strand = lnsplit
+            chrom = chrom.replace(':', '_')
 
             if not useStrand:
                 strand = "NA"
@@ -146,6 +148,7 @@ def sort_junctions(libl, options):
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
                 chrom, start, end, dot, count, strand = ln.split()
+                chrom = chrom.replace(':', '_')
                 if not useStrand:
                     strand = "NA"
                 if checkchrom and (chrom not in chromLst): continue
