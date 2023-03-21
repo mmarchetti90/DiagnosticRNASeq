@@ -83,7 +83,8 @@ RUN Rscript -e 'BiocManager::install("AllelicImbalance")'
 RUN Rscript -e 'install.packages("ggplot2")' && \
     Rscript -e 'BiocManager::install(c("genefilter", \
                                        "Biostrings", \
-                                       "Rsubread"))'
+                                       "Rsubread", \
+                                       "sva"))'
 
 ## Install useful python tools
 RUN pip3 install --upgrade pip setuptools && \
