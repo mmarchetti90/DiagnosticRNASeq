@@ -67,7 +67,7 @@ ENV PATH $PATH:/home/STAR-${STAR_VERSION}/bin/Linux_x86_64:/home/samtools-${SAMT
 
 ## Install R leafcutter and dependencies
 RUN Rscript -e 'install.packages(c("devtools", \
-                                   "rstand"))' && \
+                                   "rstan"))' && \
     Rscript -e 'BiocManager::install(c("Biobase", \
                                        "DirichletMultinomial", \
                                        "Hmisc"))' && \
@@ -80,7 +80,8 @@ RUN Rscript -e 'BiocManager::install("OUTRIDER")'
 RUN Rscript -e 'BiocManager::install("AllelicImbalance")'
 
 ## Install other useful R packages
-RUN Rscript -e 'install.packages("ggplot2")' && \
+RUN Rscript -e 'install.packages(c("ggplot2", \
+                                   "batchtools"))' && \
     Rscript -e 'BiocManager::install(c("genefilter", \
                                        "Biostrings", \
                                        "Rsubread", \
