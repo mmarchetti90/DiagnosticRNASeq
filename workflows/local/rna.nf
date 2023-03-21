@@ -65,6 +65,11 @@ workflow RNA_DIAGNOSTIC {
     .ifEmpty("${projectDir}/modules")
     .set{ control_gene_counts_dir }
   
+  Channel
+    .fromPath("${params.control_cohort_counts_ids}")
+    .ifEmpty("${projectDir}/nextflow.config")
+    .set{ control_gene_counts_ids }
+  
   // Parsing source file to output lists fastq files
   ParseSourceFile(scripts_dir, source_file)
 
@@ -105,6 +110,6 @@ workflow RNA_DIAGNOSTIC {
 
   // OUTRIDER ---------------------------- //
 
-  Outrider(scripts_dir, MergeCounts.out.merged_counts)
+  Outrider(scripts_dir, MergeCounts.out.merged_counts, control_gene_counts_ids)
 
 }
