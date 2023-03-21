@@ -18,11 +18,47 @@ parseArgs <- function() {
 	# Adjusted p value threshold
 	pval <- args[match("--p_thr", args) + 1]
 	
-	# Threads
+	# Threads (if == "serial" or "1", then a SerialParam will be used instead of MulticoreParam)
 	threads <- args[match("--threads", args) + 1]
 
-	return(c(counts_file, min_reads, pval, threads))
+	# Text file containing ctrl IDs (if not provided, samples are assumed to all belong to the sample batch)
+	if("--ctrl_ids_list" %in% args) {
 
+		ctrl_ids <- args[match("--ctrl_ids_list", args) + 1]
+
+	} else {
+
+		ctrl_ids <- ""
+
+	}
+
+	return(c(counts_file, min_reads, pval, threads, ctrl_ids))
+
+}
+
+### ---------------------------------------- ###
+
+batchCorrection <- function(cnts, ids) {
+  
+  # Gathering batch info
+  batch_annotation <- rep(2, ncol(cnts))
+  batch_annotation[colnames(cnts) %in% ids] <- 1
+  
+  # Correcting for batch effect using ComBat_seq
+  if(length(unique(batch_annotation)) > 1) {
+    
+    corrected_cnts <- ComBat_seq(as.matrix(cnts), batch_annotation, group = NULL, full_mod = TRUE)
+    corrected_cnts <- as.data.frame(corrected_cnts)
+    
+  } else {
+    
+    print("WARNING: no batches detected")
+    corrected_cnts <- cnts
+    
+  }
+  
+  return(corrected_cnts)
+  
 }
 
 ### ---------------------------------------- ###
@@ -30,13 +66,24 @@ parseArgs <- function() {
 runOutrider <- function(params, cnts) {
   
   # Setting number of threads
-  threads <- MulticoreParam(as.integer(params[4]))
+  if(params[4] == "serial" | params[4] == "1") {
+
+  	threads <- SerialParam()
+
+  } else {
+
+  	threads <- MulticoreParam(as.integer(params[4]))
+
+  }
   
   # Create Outrider object from count matrix
   ods <- OutriderDataSet(countData = cnts)
   
   # Filter for low counts
   ods <- filterExpression(ods, minCounts = T, fpkmCutoff = params[2])
+
+  # Find the optimal encoding dimension q
+	ods <- findEncodingDim(ods, BPPARAM = threads)
   
   # Run full outrider pipeline (control, fit model, calculate P-values)
   ods <- OUTRIDER(ods, BPPARAM = threads)
@@ -53,11 +100,23 @@ runOutrider <- function(params, cnts) {
 ### ------------------MAIN------------------ ###
 
 library(OUTRIDER)
+library(sva)
 
 parameters <- parseArgs()
 
 # Import counts and experimental design
 counts <- read.delim(as.character(parameters[1]), header = TRUE, row.names = 1, sep = "\t", check.names = FALSE)
+
+# Batch correction
+if(parameters[5] != "") {
+
+	# Load list of ctrl ids
+	ctrl_ids <- as.vector(read.delim(as.character(parameters[5]), header = FALSE)[,1])
+
+	# Correct for batch
+	counts <- batchCorrection(counts, ctrl_ids)
+
+}
 
 # Run outrider
 runOutrider(parameters, counts)
