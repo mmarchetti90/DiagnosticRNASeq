@@ -10,6 +10,7 @@ process MergeCounts {
 
     output:
     path "MergedGeneCounts.tsv", emit: merged_counts
+    path "{ctrl_ids,mock}.txt", emit: control_gene_counts_ids
 
     """
     # Get info
@@ -56,11 +57,12 @@ process MergeCounts {
 
     done
 
-    # Adding counts from control cohort (if any)
+    # Adding counts from control cohort and creating a list of control ids (if any)
     control_counts_num=\$(ls ${control_gene_counts_dir} | grep "\${file_pattern}" | wc -l)
     if (( \$control_counts_num > 0 ))
     then
 
+        # Adding counts to counts matrix
         for file in ${control_gene_counts_dir}/*\${file_pattern}
         do
 
@@ -71,6 +73,17 @@ process MergeCounts {
             rm counts_temp.txt
             rm merged_temp.txt
             mv new_merged_temp.txt merged_temp.txt
+
+        done
+
+        # Creating list of control ids
+        touch ctrl_ids.txt
+        for file in ${control_gene_counts_dir}/*\${file_pattern}
+        do
+
+            sample_name=\$(basename \$file)
+            sample_name=\${sample_name%\$file_pattern*}
+            echo \${sample_name} >> ctrl_ids.txt
 
         done
 

@@ -14,7 +14,7 @@ process Outrider {
     path "outrider_analysis.rds"
 
     """
-    if [[ "${ctrl_ids}" == "nextflow.config" ]]
+    if [[ "${ctrl_ids}" == "mock.txt" ]]
     then
 
         Rscript ${scripts_dir}/outrider/outrider.R \
