@@ -14,7 +14,7 @@ process LeafcutterMD {
     path "leafcutter_outlier_effSize.txt"
 
     """
-    Rscript ${scripts_dir}/leafcutter/leafcutterMD.R --num_threads 4 ${intron_counts}
+    Rscript ${scripts_dir}/leafcutter/leafcutterMD.R --num_threads \$SLURM_CPUS_ON_NODE ${intron_counts}
     """
 
 }
