@@ -86,6 +86,10 @@ process MergeCounts {
             echo \${sample_name} >> ctrl_ids.txt
 
         done
+    
+    else
+    
+        touch mock.txt
 
     fi
 
