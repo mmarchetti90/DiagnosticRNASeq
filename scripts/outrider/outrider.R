@@ -113,8 +113,13 @@ if(parameters[5] != "") {
 	# Load list of ctrl ids
 	ctrl_ids <- as.vector(read.delim(as.character(parameters[5]), header = FALSE)[,1])
 
-	# Correct for batch
-	counts <- batchCorrection(counts, ctrl_ids)
+	# Skipping batch correction if there's batches of size 1
+	if(length(ctrl_ids) > 1 & ncol(counts) - length(ctrl_ids) > 1) {
+	  
+	  # Correct for batch
+	  counts <- batchCorrection(counts, ctrl_ids)
+	  
+	}
 
 }
 
