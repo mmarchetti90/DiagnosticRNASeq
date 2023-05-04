@@ -83,7 +83,7 @@ runOutrider <- function(params, cnts) {
   ods <- filterExpression(ods, minCounts = T, fpkmCutoff = params[2])
 
   # Find the optimal encoding dimension q
-	ods <- findEncodingDim(ods, BPPARAM = threads)
+  ods <- findEncodingDim(ods, BPPARAM = threads)
   
   # Run full outrider pipeline (control, fit model, calculate P-values)
   ods <- OUTRIDER(ods, BPPARAM = threads)
