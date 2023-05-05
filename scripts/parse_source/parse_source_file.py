@@ -42,7 +42,7 @@ def listFastqFiles(b_p, src_dt):
             read1 = abspath(f'{b_p}/{read1}')
             read2 = abspath(f'{b_p}/{read2}')
         
-            reads_list.append(sample_id + '\t' + read1 + '\t' + read2)
+            reads_list.append(f'{sample_id}\t{read1}\t{read2}')
 
         else:
 
