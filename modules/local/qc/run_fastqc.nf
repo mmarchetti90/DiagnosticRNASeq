@@ -17,16 +17,10 @@ process RunFastQC {
     # Single-end
     fastqc --outdir . -t \$SLURM_CPUS_ON_NODE ${read1}
 
-  elif [[ "${workflow.profile}" != "cellranger" ]]
-  then
+  else
 
     # Paired-end
     fastqc --outdir . -t \$SLURM_CPUS_ON_NODE ${read1} ${read2}
-
-  else
-
-    # Single-cell
-    fastqc --outdir . -t \$SLURM_CPUS_ON_NODE ${read2}/*.fastq.gz
 
   fi
   """
