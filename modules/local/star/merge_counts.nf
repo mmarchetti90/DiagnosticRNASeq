@@ -1,6 +1,8 @@
 process MergeCounts {
 
-    label 'slurm'
+    // Merges counts from STAR and a control cohort
+
+    label 'local'
 
     publishDir "${projectDir}/${params.gene_counts_dir}", mode: 'copy', pattern: "MergedGeneCounts.tsv"
 

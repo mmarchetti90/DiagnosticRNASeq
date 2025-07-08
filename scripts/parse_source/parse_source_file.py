@@ -11,13 +11,26 @@ N.B. The source file has to be in the same folder as the fastq files or the fast
 
 def listFastqFiles(b_p, src_dt):
     
-    reads_list = ['SampleID\tFile1\tFile2']
+    # Assign files to reads_list
+    reads_list = {}
     
-    for sample_id in set(src_dt.Sample_ID):
+    for sample_id,file in src_dt:
         
-        read1, *read2 = src_dt.loc[src_dt['Sample_ID'] == sample_id, 'Data_File']
+        if sample_id in reads_list.keys():
+            
+            reads_list[sample_id].append(file)
+            
+            reads_list[sample_id].sort()
+    
+        else:
+            
+            reads_list[sample_id] = [file]
+    
+    # Manage read2 for paired-end and single-read experiments
+    for sample_id,files in reads_list.items():
         
-        # Manage read2 for paired-end and single-read experiments
+        read1, *read2 = files
+        
         if len(read2):
             
             read2 = read2[0]
@@ -25,44 +38,45 @@ def listFastqFiles(b_p, src_dt):
         else:
             
             read2 = 'mock.fastq'
+            
+            reads_list[sample_id].append(read2)
+            
             with open('mock.fastq', 'w') as mock_file:
 
                 mock_file.write('Empty')
-        
+    
         # Check that read1 and read2 exist and add full path to file name
-        if exists(read1) and (exists(read2) if read2 != '/mock/path/to/mock.fastq' else True):
+        if exists(read1) and (exists(read2) if read2 != 'mock.fastq' else True):
             
             read1 = abspath(read1)
-            read2 = abspath(read2)
+            read2 = abspath(read2) if read2 != 'mock.fastq' else read2
         
-            reads_list.append(sample_id + '\t' + read1 + '\t' + read2)
-
-        elif exists(f'{b_p}/{read1}') and (exists(f'{b_p}/{read2}') if read2 != '/mock/path/to/mock.fastq' else True):
+            reads_list[sample_id] = [read1, read2]
+    
+        elif exists(f'{b_p}/{read1}') and (exists(f'{b_p}/{read2}') if read2 != 'mock.fastq' else True):
             
             read1 = abspath(f'{b_p}/{read1}')
-            read2 = abspath(f'{b_p}/{read2}')
+            read2 = abspath(f'{b_p}/{read2}') if read2 != 'mock.fastq' else read2
         
-            reads_list.append(f'{sample_id}\t{read1}\t{read2}')
-
+            reads_list[sample_id] = [read1, read2]
+    
         else:
-
+    
             pass
     
-    if len(reads_list) == 1:
+    if not len(reads_list):
         
         sys_exit('ERROR: no raw reads files found.')
         
     else:
     
-        reads_list = '\n'.join(reads_list)
+        reads_list = 'SampleID\tFile1\tFile2\n' + '\n'.join(['\t'.join([sample_id, read1, read2]) for sample_id,(read1,read2) in reads_list.items()])
 
         with open('ReadsList.txt', 'w') as output:
 
             output.write(reads_list)
 
 ### ------------------MAIN------------------ ###
-
-import pandas as pd
 
 from os import readlink
 from os.path import abspath, exists
@@ -89,8 +103,7 @@ if not exists(source_file_path):
     
 else:
 
-    source_data = pd.read_csv(source_file_path, sep='\t', header=None, skip_blank_lines=True)
-    source_data.columns = ['Sample_ID', 'Data_File']
+    source_data = [line.split('\t') for line in open(source_file_path, 'r').read().split('\n') if len(line)]
 
 # Get absolute path of the source file (same place where reads should be)
 try: # Checking id source file is a symlink

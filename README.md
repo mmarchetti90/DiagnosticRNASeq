@@ -1,5 +1,5 @@
 # Diagnostic RNASeq analysis
-## Dockerized nextflow workflow for diagnostic RNASeq analysis with leafcutterMD, SPOT, and OUTRIDER
+## Dockerized nextflow workflow for diagnostic RNASeq analysis with leafcutterMD, SPOT, OUTRIDER, and ASE
 
 /// --------------------------------------- //
 
@@ -40,6 +40,25 @@ nextflow run [OPTIONS] --source_file "/path/to/source/file"
 		Path to genes count files generated from a control cohort
 		Can be omitted, in which case only provided samples will be used
 
+--hpo_obo_path
+
+		Path to OBO file for HPO terms
+		Get from https://hpo.jax.org/data/ontology
+
+--genes_to_phenotype_path
+
+		Path to genes to HPO term annotation file
+		Get from https://hpo.jax.org/data/annotations
+
+--target_hpo_terms_path
+
+		Diagnostic HPO terms for proband
+
+--genomic_vcf_path
+
+		Path to vcf file generated from DNA data
+		If absent, the vcf generated from RNA will be used for ASE
+
 --read_length
 
 		Used for STAR index generation
@@ -64,6 +83,22 @@ nextflow run [OPTIONS] --source_file "/path/to/source/file"
 
 		For results filtering
 		(Default, 0.05)
+
+--ploidy
+
+		Ploidy for GATK variant calling
+		(Default,  2)
+
+--variants_only
+
+    	If true, HaplotypeCaller will run in EMIT_VARIANTS_ONLY mode
+    	If false, HaplotypeCaller will run in EMIT_ALL_CONFIDENT_SITES mode
+    	(Default, true)
+
+--min_depth
+
+		Min depth of variants for ASE analysis
+    	(Default, 20)
 
 /// --------------------------------------- ///
 

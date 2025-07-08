@@ -1,8 +1,11 @@
 process IntronClustering {
 
-    label 'slurm'
+    // Clusters introns for LeafcutterMD
 
-    publishDir "${projectDir}/${params.intron_clusters}", mode: "copy", pattern: "intronclust_perind_numers.counts.gz"
+    label 'leafcutter'
+
+    publishDir "${projectDir}/${params.intron_clusters_dir}", mode: "copy", pattern: "raw_intronclust_perind_numers.counts.gz"
+    publishDir "${projectDir}/${params.intron_clusters_dir}", mode: "copy", pattern: "intronclust_perind_numers.counts.gz"
 
     input:
     path scripts_dir
@@ -10,6 +13,7 @@ process IntronClustering {
     path control_junc_dir
 
     output:
+    path "raw_intronclust_perind_numers.counts.gz", optional: true, emit: raw_intron_counts
     path "intronclust_perind_numers.counts.gz", emit: intron_counts
 
     """

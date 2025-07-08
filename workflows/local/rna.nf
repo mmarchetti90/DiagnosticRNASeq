@@ -4,16 +4,13 @@ Workflow for diagnostic rnaseq analyses
 
 // ----------------Workflow---------------- //
 
-include { ParseSourceFile } from '../../modules/local/parse_source/parse_source_file.nf'
-include { RunFastQC } from '../../modules/local/qc/run_fastqc.nf'
-include { GenerateStarIndex } from '../../modules/local/star/generate_star_index.nf'
-include { RunSTAR } from '../../modules/local/star/run_star.nf'
-include { MergeCounts } from '../../modules/local/star/merge_counts.nf'
-include { BamToJunc } from '../../modules/local/leafcutter/bam_to_junc.nf'
-include { IntronClustering } from '../../modules/local/leafcutter/intron_clustering.nf'
-include { LeafcutterMD } from '../../modules/local/leafcutter/leafcutter_md.nf'
-include { Spot } from '../../modules/local/spot/spot.nf'
-include { Outrider } from '../../modules/local/outrider/outrider.nf'
+include { LOAD_RESOURCES } from '../../subworkflows/local/load_resources.nf'
+include { PREPROCESSING } from '../../subworkflows/local/preprocessing.nf'
+include { ABERRANT_SPLICING } from '../../subworkflows/local/aberrant_splicing.nf'
+include { ABERRANT_EXPRESSION } from '../../subworkflows/local/aberrant_expression.nf'
+include { VARIANT_CALLING } from '../../subworkflows/local/variant_calling.nf'
+include { ALLELIC_IMBALANCE } from '../../subworkflows/local/allelic_imbalance.nf'
+include { FIND_CANDIDATES } from '../../subworkflows/local/find_candidates.nf'
 
 workflow RNA_DIAGNOSTIC {
 
@@ -23,88 +20,63 @@ workflow RNA_DIAGNOSTIC {
   main:
   // LOADING RESOURCES -------------------- //
 
-  // Channel for the directory containing the scripts used by the pipeline
-  Channel
-    .fromPath("${projectDir}/scripts")
-    .set{ scripts_dir }
+  LOAD_RESOURCES(source_file)
 
-  // Channel for genome fasta
-  Channel
-    .fromPath("${params.genome_fasta_path}")
-    .set{ genome_fasta }
+  LOAD_RESOURCES.out.scripts_dir.set{ scripts_dir }
+  LOAD_RESOURCES.out.genome_fasta.set{ genome_fasta }
+  LOAD_RESOURCES.out.genome_fasta_index.set{ genome_fasta_index }
+  LOAD_RESOURCES.out.genome_annotation.set{ genome_annotation }
+  LOAD_RESOURCES.out.star_index.set{ star_index }
+  LOAD_RESOURCES.out.gatk_dict.set{ gatk_dict }
+  LOAD_RESOURCES.out.control_junc_dir.set{ control_junc_dir }
+  LOAD_RESOURCES.out.control_gene_counts_dir.set{ control_gene_counts_dir }
+  LOAD_RESOURCES.out.hpo_obo.set{ hpo_obo }
+  LOAD_RESOURCES.out.genes_to_phenotype.set{ genes_to_phenotype }
+  LOAD_RESOURCES.out.raw_reads.set{ raw_reads }
+  LOAD_RESOURCES.out.sample_ids.set{ sample_ids }
 
-  // Channel for genome annotation
-  Channel
-    .fromPath("${params.genome_annotation_path}")
-    .set{ genome_annotation }
+  // PREPROCESSING ------------------------ //
 
-  // Creating channel for existing star index, or building de novo
-  if (new File("${params.star_index_dir}/Genome").exists()) {
+  PREPROCESSING(raw_reads, scripts_dir, genome_fasta, genome_annotation, star_index, control_gene_counts_dir)
 
-    Channel
-    .fromPath("${params.star_index_dir}")
-    .set{ star_index }
+  PREPROCESSING.out.indexed_bam.set{ indexed_bam }
+  PREPROCESSING.out.merged_counts.set{ merged_counts }
+  PREPROCESSING.out.control_gene_counts_ids.set{ control_gene_counts_ids }
 
-  }
-  else {
+  // ABERRANT SPLICING -------------------- //
 
-    sjdboverhang = params.read_length - 1
-    GenerateStarIndex(genome_fasta, genome_annotation, sjdboverhang)
-    star_index = GenerateStarIndex.out.star_index
+  ABERRANT_SPLICING(scripts_dir, genome_annotation, sample_ids, indexed_bam, control_junc_dir)
 
-  }
+  ABERRANT_SPLICING.out.parsed_leafcutter_stats.set{ parsed_leafcutter_stats }
+  ABERRANT_SPLICING.out.parsed_leafcutter_data.set{ parsed_leafcutter_data }
+  ABERRANT_SPLICING.out.spot_pvals.set{ spot_pvals }
+  ABERRANT_SPLICING.out.spot_dists.set{ spot_dists }
 
-  // Control cohort data
-  Channel
-    .fromPath("${params.control_cohort_junc_dir}")
-    .ifEmpty("${projectDir}/modules")
-    .set{ control_junc_dir }
+  // ABERRANT EXPRESSION ------------------ //
 
-  Channel
-    .fromPath("${params.control_cohort_counts_dir}")
-    .ifEmpty("${projectDir}/modules")
-    .set{ control_gene_counts_dir }
-  
-  // Parsing source file to output lists fastq files
-  ParseSourceFile(scripts_dir, source_file)
+  ABERRANT_EXPRESSION(scripts_dir, genome_annotation, sample_ids, merged_counts, control_gene_counts_ids)
 
-  // Creating raw_reads channel
-  ParseSourceFile.out.reads_list
-    .splitCsv(header: true, sep: '\t')
-    .map{row -> tuple(row.SampleID, file(row.File1), file(row.File2))}
-    .set{ raw_reads }
+  ABERRANT_EXPRESSION.out.parsed_outrider_data.set{ parsed_outrider_data }
 
-  // FASTQC ------------------------------- //
+  // VARIANT CALLING ---------------------- //
 
-  // Checking reads quality with FasQC
-  RunFastQC(raw_reads)
+  VARIANT_CALLING(genome_fasta, genome_fasta_index, gatk_dict, indexed_bam)
 
-  // STAR ALIGNMENT ----------------------- //
+  VARIANT_CALLING.out.mrkdup_indexed_bam.set{ mrkdup_indexed_bam }
+  VARIANT_CALLING.out.joint_rna_vcf.set{ joint_rna_vcf }
 
-  // Run STAR alignment
-  RunSTAR(star_index, raw_reads)
+  // ALLELIC IMBALANCE -------------------- //
 
-  // Merge gene count files
-  MergeCounts(RunSTAR.out.gene_counts.collect(), control_gene_counts_dir)
+  ALLELIC_IMBALANCE(scripts_dir, genome_fasta, genome_fasta_index, genome_annotation, gatk_dict, sample_ids, mrkdup_indexed_bam, joint_rna_vcf)
 
-  // BAM TO JUNC -------------------------- //
+  ALLELIC_IMBALANCE.out.ase_snp_stats.set{ ase_snp_stats }
+  ALLELIC_IMBALANCE.out.ase_gene_stats.set{ ase_gene_stats }
 
-  BamToJunc(scripts_dir, RunSTAR.out.bam_files)
+  // FIND CANDIDATE GENES ----------------- //
 
-  // INTRON CLUSTERING -------------------- //
+  FIND_CANDIDATES(scripts_dir, hpo_obo, genes_to_phenotype, parsed_leafcutter_data, parsed_outrider_data, ase_gene_stats)
 
-  IntronClustering(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir)
-
-  // LEAFCUTTER MD ------------------------ //
-
-  LeafcutterMD(scripts_dir, IntronClustering.out.intron_counts)
-
-  // SPOT --------------------------------- //
-
-  Spot(scripts_dir, IntronClustering.out.intron_counts)
-
-  // OUTRIDER ---------------------------- //
-
-  Outrider(scripts_dir, MergeCounts.out.merged_counts, MergeCounts.out.control_gene_counts_ids)
+  FIND_CANDIDATES.out.tools_ranking.set{ tools_ranking }
+  FIND_CANDIDATES.out.hpo_ranking.set{ hpo_ranking }
 
 }

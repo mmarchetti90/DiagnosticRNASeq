@@ -6,33 +6,33 @@
 
 parseArgs <- function() {
 
-	# Read command line arguments
-	args <- commandArgs()
+  # Read command line arguments
+  args <- commandArgs()
 
-	# Counts file
-	counts_file <- args[match("--counts", args) + 1]
-	
-	# Gene counts lower limit
-	min_reads <- args[match("--mincounts", args) + 1]
+  # Counts file
+  counts_file <- args[match("--counts", args) + 1]
+  
+  # Gene counts lower limit
+  min_reads <- args[match("--mincounts", args) + 1]
 
-	# Adjusted p value threshold
-	pval <- args[match("--p_thr", args) + 1]
-	
-	# Threads (if == "serial" or "1", then a SerialParam will be used instead of MulticoreParam)
-	threads <- args[match("--threads", args) + 1]
+  # Adjusted p value threshold
+  pval <- args[match("--p_thr", args) + 1]
+  
+  # Threads (if == "serial" or "1", then a SerialParam will be used instead of MulticoreParam)
+  threads <- args[match("--threads", args) + 1]
 
-	# Text file containing ctrl IDs (if not provided, samples are assumed to all belong to the sample batch)
-	if("--ctrl_ids_list" %in% args) {
+  # Text file containing ctrl IDs (if not provided, samples are assumed to all belong to the sample batch)
+  if("--ctrl_ids_list" %in% args) {
 
-		ctrl_ids <- args[match("--ctrl_ids_list", args) + 1]
+    ctrl_ids <- args[match("--ctrl_ids_list", args) + 1]
 
-	} else {
+  } else {
 
-		ctrl_ids <- ""
+    ctrl_ids <- ""
 
-	}
+  }
 
-	return(c(counts_file, min_reads, pval, threads, ctrl_ids))
+  return(c(counts_file, min_reads, pval, threads, ctrl_ids))
 
 }
 
@@ -64,36 +64,78 @@ batchCorrection <- function(cnts, ids) {
 ### ---------------------------------------- ###
 
 runOutrider <- function(params, cnts) {
-  
-  # Setting number of threads
-  if(params[4] == "serial" | params[4] == "1") {
 
-  	threads <- SerialParam()
+	tryCatch(
+    expr = {
 
-  } else {
+      # Setting number of threads
+      if(params[4] == "serial" | params[4] == "1") {
 
-  	threads <- MulticoreParam(as.integer(params[4]))
+        threads <- SerialParam()
 
-  }
-  
-  # Create Outrider object from count matrix
-  ods <- OutriderDataSet(countData = cnts)
-  
-  # Filter for low counts
-  ods <- filterExpression(ods, minCounts = T, fpkmCutoff = params[2])
+      } else {
 
-  # Find the optimal encoding dimension q
-  ods <- findEncodingDim(ods, BPPARAM = threads)
-  
-  # Run full outrider pipeline (control, fit model, calculate P-values)
-  ods <- OUTRIDER(ods, BPPARAM = threads)
-  
-  # Save RDS object
-  saveRDS(ods, file = "outrider_analysis.rds")
-  
-  # Extracting results
-  analysis <- results(ods, padjCutoff = as.numeric(params[3]))
-  write.table(analysis, "aberrant_expression.tsv", row.names = FALSE, sep = "\t")
+        threads <- MulticoreParam(as.integer(params[4]))
+
+      }
+      
+      # Create Outrider object from count matrix
+      ods <- OutriderDataSet(countData = cnts)
+      
+      # Filter for low counts
+      ods <- filterExpression(ods, minCounts = T, fpkmCutoff = params[2])
+
+      # Find the optimal encoding dimension q
+      ods <- estimateBestQ(ods, BPPARAM = threads)
+      
+      # Run full outrider pipeline (control, fit model, calculate P-values)
+      ods <- OUTRIDER(ods, BPPARAM = threads)
+      
+      # Save RDS object
+      saveRDS(ods, file = "outrider_analysis.rds")
+      
+      # Extracting results
+      analysis <- results(ods, padjCutoff = as.numeric(params[3]))
+      write.table(analysis, "aberrant_expression.tsv", row.names = FALSE, sep = "\t")
+
+    },
+    error = function(e){
+
+      message("Error executing runOutrider():")
+      print(e)
+
+      mock_output <- data.frame("geneID" = "AAA",
+                                "sampleID" = "BBB",
+                                "pValue" = 1,
+                                "padjust" = 1,
+                                "zScore" = 0,
+                                "l2fc" = 0,
+                                "rawcounts" = 0,
+                                "normcounts" = 0,
+                                "meanCorrected" = 0,
+                                "theta" = 0,
+                                "aberrant" = FALSE,
+                                "AberrantBySample" = 0,
+                                "AberrantByGene" = 0,
+                                "padj_rank" = 10000,
+                                "FDR_set" = "transcriptome-wide")
+
+      write.table(mock_output, "aberrant_expression.tsv", row.names = FALSE, sep = "\t")
+
+    },
+    warning = function(w){
+
+      message("Warning executing runOutrider():")
+      print(w)
+
+    },
+    finally = {
+
+      message("runOutrider() ending.")
+
+    }
+
+  )
   
 }
 
@@ -110,16 +152,16 @@ counts <- read.delim(as.character(parameters[1]), header = TRUE, row.names = 1, 
 # Batch correction
 if(parameters[5] != "") {
 
-	# Load list of ctrl ids
-	ctrl_ids <- as.vector(read.delim(as.character(parameters[5]), header = FALSE)[,1])
+  # Load list of ctrl ids
+  ctrl_ids <- as.vector(read.delim(as.character(parameters[5]), header = FALSE)[,1])
 
-	# Skipping batch correction if there's batches of size 1
-	if(length(ctrl_ids) > 1 & ncol(counts) - length(ctrl_ids) > 1) {
-	  
-	  # Correct for batch
-	  counts <- batchCorrection(counts, ctrl_ids)
-	  
-	}
+  # Skipping batch correction if there's batches of size 1
+  if(length(ctrl_ids) > 1 & ncol(counts) - length(ctrl_ids) > 1) {
+    
+    # Correct for batch
+    counts <- batchCorrection(counts, ctrl_ids)
+    
+  }
 
 }
 

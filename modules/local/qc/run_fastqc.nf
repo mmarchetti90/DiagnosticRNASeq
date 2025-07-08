@@ -1,11 +1,13 @@
 process RunFastQC {
   
-  label 'slurm'
+  // FastQC
 
-  publishDir "${projectDir}/${params.fastqc_dir}", mode: "move", pattern: "*_fastqc.{html,zip}"
+  label 'fastqc'
+
+  publishDir "${projectDir}/${params.qc_dir}/${params.fastqc_subdir}", mode: "copy", pattern: "*_fastqc.{html,zip}"
 
   input:
-  tuple val(read_id), path(read1), path(read2)
+  tuple val(sample_id), path(read1), path(read2)
 
   output:
   path "*_fastqc.{html,zip}", optional: true, emit: fastqc_reports

@@ -1,6 +1,10 @@
 process GenerateStarIndex {
 
-  label 'slurm'
+  // Generates a STAR index
+
+  label 'star'
+
+  publishDir "${projectDir}/${params.resources_dir}", mode: "copy", pattern: "${params.star_index_subdir}"
 
   input:
   path genome_fasta
@@ -8,7 +12,7 @@ process GenerateStarIndex {
   val overhang
 
   output:
-  path "StarIndex", emit: star_index
+  path "${params.star_index_subdir}", emit: star_index
 
   script:
   """
@@ -17,7 +21,7 @@ process GenerateStarIndex {
   STAR \
   --runThreadN \$SLURM_CPUS_ON_NODE \
   --runMode genomeGenerate \
-  --genomeDir ./StarIndex/ \
+  --genomeDir ./${params.star_index_subdir}/ \
   --genomeFastaFiles ${genome_fasta} \
   --sjdbGTFfile ${genome_annotation} \
   --sjdbOverhang ${overhang} \

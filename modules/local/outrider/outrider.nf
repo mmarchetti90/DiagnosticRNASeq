@@ -1,6 +1,8 @@
 process Outrider {
 
-    label 'slurm'
+    // Run Outrider
+
+    label 'outrider'
 
     publishDir "${projectDir}/${params.outrider_out}", mode: 'copy', pattern: "*.{tsv,rds}"
 
@@ -10,8 +12,8 @@ process Outrider {
     path ctrl_ids
 
     output:
-    path "aberrant_expression.tsv"
-    path "outrider_analysis.rds"
+    path "aberrant_expression.tsv", emit: outrider_expr
+    path "outrider_analysis.rds", optional: true
 
     """
     if [[ "${ctrl_ids}" == "mock.txt" ]]

@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 /*
-Pipeline for diagnostic rnaseq analyses, using whole blood samples from the GTEx consortium as controls
+Pipeline for diagnostic rnaseq analyses
 */
 
 // ----------------Workflow---------------- //

@@ -1,21 +1,23 @@
 process RunSTAR {
   
+  // STAR alignment
+
   label 'star'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*{Aligned,Unmapped,SJ}*"
+  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*{Unmapped,SJ}*"
   publishDir "${projectDir}/${params.gene_counts_dir}", mode: "copy", pattern: "*_ReadsPerGene.out.tab"
-  publishDir "${projectDir}/${params.gene_counts_dir}/${params.star_reports}", mode: "copy", pattern: "*Log*"
+  publishDir "${projectDir}/${params.qc_dir}/${params.star_subdir}", mode: "copy", pattern: "*Log*"
 
   input:
   each path(index)
   tuple val(sample_id), path(read1), path(read2)
 
   output:
-  tuple val("${sample_id}"), path("${sample_id}_Aligned.sortedByCoord.out.bam"), emit: bam_files
+  tuple val(sample_id), path("${sample_id}_Aligned.out.bam"), emit: bam_files
+  tuple val(sample_id), path("${sample_id}_SJ.out.tab"), emit: star_sj
   path "${sample_id}_Unmapped.out.mate1"
   path "${sample_id}_ReadsPerGene.out.tab", emit: gene_counts
   path "${sample_id}_Log.{final.out,out,progress.out}", emit: star_reports
-  path "${sample_id}_SJ.out.tab"
   
   """
   # STAR alignment
@@ -87,10 +89,6 @@ process RunSTAR {
     fi
 
   fi
-
-  # Sorting by coordinates
-  # N.B. I use samtools instead of STAR --outSAMtype BAM SortedByCoordinate because STAR was sometimes runnin into memory issues on the cluster
-  samtools sort ${sample_id}_Aligned.out.bam -o ${sample_id}_Aligned.sortedByCoord.out.bam -@ \$SLURM_CPUS_ON_NODE
   """
 
 }
