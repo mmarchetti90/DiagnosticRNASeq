@@ -12,6 +12,7 @@ process MarkDuplicates {
 
   output:
   tuple val(sample_id), path("${sample_id}_mrkdup.bam"), emit: bam_files
+  tuple val(sample_id), path("${sample_id}_marked_dup_metrics.txt"), emit: dedup_metrics
 
   """
   # Mark duplicates
