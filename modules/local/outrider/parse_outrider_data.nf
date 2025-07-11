@@ -13,7 +13,7 @@ process ParseOutrider {
   val sample_id
 
   output:
-  tuple val(sample_id), path("${sample_id}_abberrant_expression.tsv.gz"), emit: parsed_outrider_data
+  tuple val(sample_id), path("${sample_id}_aberrant_expression.tsv.gz"), emit: parsed_outrider_data
 
   """
   python3 ${scripts_dir}/outrider/parse_outrider_data.py \

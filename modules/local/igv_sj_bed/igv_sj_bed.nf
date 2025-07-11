@@ -4,7 +4,7 @@ process MakeIgvSjBed {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.qc_dir}/${params.sj_bed_subdir}", mode: "copy", pattern: "*.{.bed.gz,.bed.gz.tbi}"
+  publishDir "${projectDir}/${params.qc_dir}/${params.sj_bed_subdir}", mode: "copy", pattern: "*{.bed.gz,.bed.gz.tbi}"
 
   input:
   each path(scripts_dir)

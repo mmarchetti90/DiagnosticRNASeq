@@ -32,7 +32,7 @@ workflow ABERRANT_SPLICING {
   LeafcutterMD(scripts_dir, IntronClustering.out.intron_counts)
 
   // Parse LeafcutterMD output
-  ParseLeafcutter(scripts_dir, genome_annotation, LeafcutterMD.out.leafcutter_pvals, LeafcutterMD.out.leafcutter_cl_pvals, LeafcutterMD.out.leafcutter_effsize, sample_ids)
+  ParseLeafcutter(scripts_dir, genome_annotation, LeafcutterMD.out.leafcutter_pvals, LeafcutterMD.out.leafcutter_effsize, LeafcutterMD.out.leafcutter_cl_pvals, sample_ids)
 
   // SPOT
   Spot(scripts_dir, IntronClustering.out.intron_counts)

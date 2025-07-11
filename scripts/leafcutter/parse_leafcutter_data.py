@@ -229,8 +229,8 @@ def summarize_leafcutter(dt, p_thr=0.05):
     # Finalize format
     
     gene_data.columns = ['gene_id', 'gene_symbol', 'gene_biotype', 'contig', 'strand',
-                         'n_clusters', 'n_clusters_p<0.05', 'n_clusters_min_pval',
-                         'n_introns', 'n_introns_p<0.05', 'n_introns_min_pval', 'intron_best_abs_effect', 'intron_median_abs_effect']
+                         'n_clusters', 'n_clusters_p<0.05', 'clusters_min_pval',
+                         'n_introns', 'n_introns_p<0.05', 'introns_min_pval', 'intron_best_abs_effect', 'intron_median_abs_effect']
     
     return gene_data
 

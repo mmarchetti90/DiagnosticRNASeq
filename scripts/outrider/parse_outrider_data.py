@@ -144,4 +144,4 @@ sample_data.columns = ['gene_id', 'pval', 'padj', 'log2FC']
 
 sample_data = pd.merge(gtf, sample_data, on='gene_id', how='inner')
 
-sample_data.to_csv(sample_id + '_abberrant_expression.tsv.gz', sep='\t', index=False, header=True)
+sample_data.to_csv(sample_id + '_aberrant_expression.tsv.gz', sep='\t', index=False, header=True)

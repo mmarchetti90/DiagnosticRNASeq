@@ -87,6 +87,33 @@ def parse_obo(obo_file):
 
 ### ---------------------------------------- ###
 
+def kneedle(vector, sort_vector=True):
+    
+    """
+    Kneedle to find threshold cutoff.
+    """
+    
+    if sort_vector:
+        
+        vector = np.sort(vector)[::-1]
+    
+    # Find gradient and intercept
+    x0, x1 = 0, len(vector)
+    y0, y1 = max(vector), min(vector)
+    gradient = (y1 - y0) / (x1 - x0)
+    intercept = y0
+    
+    # Compute difference vector
+    difference_vector = [(gradient * x + intercept) - y for x,y in enumerate(vector)]
+    
+    # Find max of difference_vector and define cutoff
+    cutoff_index = difference_vector.index(max(difference_vector))
+    cutoff_value = vector[cutoff_index]
+    
+    return cutoff_index, cutoff_value
+
+### ---------------------------------------- ###
+
 def hpo_overlap(hierarchy, targets, hits, max_dist):
     
     target_hits, overlap = {}, 0
@@ -202,9 +229,15 @@ from sys import argv
 
 hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank = parse_args()
 
-### Only consider the top 1000 genes
+### Cutoff final_pval using a kneedle (but keep N genes max)
 
-N = 1000
+minus_log_pval = - np.log10(genes_rank['final_pval'].values + 1e-6)
+
+_, thr = kneedle(minus_log_pval.copy(), True)
+
+genes_rank = genes_rank.loc[minus_log_pval >= thr,]
+
+N = 2000
 
 genes_rank = genes_rank.iloc[:N,]
 
@@ -217,7 +250,7 @@ max_branch_length = 3
 
 genes_rank.loc[:, 'hpo_hits'] = np.repeat('', genes_rank.shape[0])
 genes_rank.loc[:, 'hpo_hits_distance'] = np.repeat('', genes_rank.shape[0])
-genes_rank.loc[:, 'hpo_overlap'] = np.repeat(0, genes_rank.shape[0])
+genes_rank.loc[:, 'hpo_overlap'] = np.repeat(0., genes_rank.shape[0])
 
 genes_rank = genes_rank.reset_index(drop=True)
 
