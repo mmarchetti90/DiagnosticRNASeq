@@ -20,8 +20,8 @@ def parse_args():
         
         columns = [
             'gene_id', 'gene_symbol', 'gene_biotype', 'contig', 'strand',
-            'n_clusters', 'n_clusters_p<0.05', 'n_clusters_min_pval', 'n_introns', 'n_introns_p<0.05',
-            'n_introns_min_pval', 'intron_best_abs_effect', 'intron_median_abs_effect', 'intron_median_abs_effect_scaled'
+            'n_clusters', 'n_clusters_p<0.05', 'clusters_min_pval', 'n_introns', 'n_introns_p<0.05',
+            'introns_min_pval', 'intron_best_abs_effect', 'intron_median_abs_effect', 'intron_median_abs_effect_scaled'
         ]
         
         aberrant_splicing_data = pd.DataFrame({}, columns=columns)
@@ -158,7 +158,7 @@ else:
 pvals = merge_data(aberrant_splicing_data,
                    aberrant_expression_data,
                    allelic_imbalance_data,
-                   ['n_clusters_min_pval', 'padj', 'compound_p'],
+                   ['clusters_min_pval', 'padj', 'compound_p'],
                    'final_pval')
 
 ### Merge effect size

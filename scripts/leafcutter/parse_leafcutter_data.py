@@ -256,4 +256,4 @@ all_data.to_csv(sample_id + '_splicing_stats.tsv.gz', sep='\t', index=False, hea
 
 gene_data = summarize_leafcutter(all_data)
 
-gene_data.to_csv(sample_id + '_abberrant_splicing.tsv.gz', sep='\t', index=False, header=True)
+gene_data.to_csv(sample_id + '_aberrant_splicing.tsv.gz', sep='\t', index=False, header=True)
