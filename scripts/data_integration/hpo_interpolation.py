@@ -32,7 +32,11 @@ def parse_args():
     
     genes_rank = pd.read_csv(genes_rank_path, sep='\t')
     
-    return hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank
+    # Ranking type (one of 'integrated_data', 'aberrant_splicing', 'aberrant_expression', 'allelic_imbalance')
+    
+    genes_rank_type = argv[argv.index('--rank_type') + 1]
+    
+    return hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank, genes_rank_type
 
 ### ---------------------------------------- ###
 
@@ -227,49 +231,66 @@ from sys import argv
 
 ### Parse args
 
-hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank = parse_args()
+hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank, genes_rank_type = parse_args()
 
 ### Cutoff final_pval using a kneedle (but keep N genes max)
 
-minus_log_pval = - np.log10(genes_rank['final_pval'].values + 1e-6)
-
-_, thr = kneedle(minus_log_pval.copy(), True)
-
-genes_rank = genes_rank.loc[minus_log_pval >= thr,]
-
-N = 2000
-
-genes_rank = genes_rank.iloc[:N,]
-
-### Score genes based on HPO overlap
-
-# N.B. Genes may be associated with an HPO term with a certain hierarchical distance from a targer
-# one. Only terms with distance < 3 nodes will be considered
-
-max_branch_length = 3
-
-genes_rank.loc[:, 'hpo_hits'] = np.repeat('', genes_rank.shape[0])
-genes_rank.loc[:, 'hpo_hits_distance'] = np.repeat('', genes_rank.shape[0])
-genes_rank.loc[:, 'hpo_overlap'] = np.repeat(0., genes_rank.shape[0])
-
-genes_rank = genes_rank.reset_index(drop=True)
-
-for idx,gene_info in genes_rank.iterrows():
+if genes_rank.shape[0] == 0:
     
-    if gene_info['gene_symbol'] not in genes2hpo['gene_symbol'].values:
+    genes_rank.loc[:, ['hpo_hits', 'hpo_hits_distance', 'hpo_overlap']] = []
+    
+    genes_rank.to_csv(f'gene_ranks_with_hpo-{genes_rank_type}.tsv.gz', sep='\t', index=False, header=True)
+
+else:
+    
+    rank_type_pval_columns = {'integrated_data' : 'final_pval',
+                              'aberrant_splicing' : 'clusters_min_pval',
+                              'aberrant_expression' : 'padj',
+                              'allelic_imbalance' : 'compound_p'}
+    
+    pval_column = rank_type_pval_columns[genes_rank_type]
+    
+    genes_rank = genes_rank.sort_values(by=pval_column)
+    
+    minus_log_pval = - np.log10(genes_rank[pval_column].values + 1e-6)
+    
+    _, thr = kneedle(minus_log_pval.copy(), True)
+    
+    genes_rank = genes_rank.loc[minus_log_pval >= thr,]
+    
+    N = 2000
+    
+    genes_rank = genes_rank.iloc[:N,]
+    
+    ### Score genes based on HPO overlap
+    
+    # N.B. Genes may be associated with an HPO term with a certain hierarchical distance from a targer
+    # one. Only terms with distance < 3 nodes will be considered
+    
+    max_branch_length = 3
+    
+    genes_rank.loc[:, 'hpo_hits'] = np.repeat('', genes_rank.shape[0])
+    genes_rank.loc[:, 'hpo_hits_distance'] = np.repeat('', genes_rank.shape[0])
+    genes_rank.loc[:, 'hpo_overlap'] = np.repeat(0., genes_rank.shape[0])
+    
+    genes_rank = genes_rank.reset_index(drop=True)
+    
+    for idx,gene_info in genes_rank.iterrows():
         
-        continue
+        if gene_info['gene_symbol'] not in genes2hpo['gene_symbol'].values:
+            
+            continue
+        
+        gene_hpo = genes2hpo.loc[genes2hpo['gene_symbol'] == gene_info['gene_symbol'], 'hpo_id'].values
+        
+        target_hits, overlap = hpo_overlap(hpo_hierarchy, target_hpo_terms, gene_hpo, max_branch_length)
+        
+        genes_rank.loc[idx, 'hpo_hits'] = ';'.join(target_hits.keys())
+        
+        genes_rank.loc[idx, 'hpo_hits_distance'] = ';'.join([str(v) for v in target_hits.values()])
+        
+        genes_rank.loc[idx, 'hpo_overlap'] = overlap
     
-    gene_hpo = genes2hpo.loc[genes2hpo['gene_symbol'] == gene_info['gene_symbol'], 'hpo_id'].values
+    genes_rank.sort_values('hpo_overlap', ascending=False, inplace=True)
     
-    target_hits, overlap = hpo_overlap(hpo_hierarchy, target_hpo_terms, gene_hpo, max_branch_length)
-    
-    genes_rank.loc[idx, 'hpo_hits'] = ';'.join(target_hits.keys())
-    
-    genes_rank.loc[idx, 'hpo_hits_distance'] = ';'.join([str(v) for v in target_hits.values()])
-    
-    genes_rank.loc[idx, 'hpo_overlap'] = overlap
-
-genes_rank.sort_values('hpo_overlap', ascending=False, inplace=True)
-
-genes_rank.to_csv('gene_ranks_with_hpo.tsv.gz', sep='\t', index=False, header=True)
+    genes_rank.to_csv(f'gene_ranks_with_hpo-{genes_rank_type}.tsv.gz', sep='\t', index=False, header=True)

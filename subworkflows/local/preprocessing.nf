@@ -4,7 +4,6 @@ Reads trimming, alignment, and generation of files for downstream analyses
 
 // ----------------Workflow---------------- //
 
-include { ParseSourceFile } from '../../modules/local/parse_source/parse_source_file.nf'
 include { TrimFastQ } from '../../modules/local/trimgalore/trimgalore.nf'
 include { RunFastQC } from '../../modules/local/qc/run_fastqc.nf'
 include { GenerateStarIndex } from '../../modules/local/star/generate_star_index.nf'

@@ -77,6 +77,9 @@ workflow RNA_DIAGNOSTIC {
   FIND_CANDIDATES(scripts_dir, hpo_obo, genes_to_phenotype, parsed_leafcutter_data, parsed_outrider_data, ase_gene_stats)
 
   FIND_CANDIDATES.out.tools_ranking.set{ tools_ranking }
-  FIND_CANDIDATES.out.hpo_ranking.set{ hpo_ranking }
+  FIND_CANDIDATES.out.hpo_ranking_leafcutter.set{ hpo_ranking_leafcutter }
+  FIND_CANDIDATES.out.hpo_ranking_outrider.set{ hpo_ranking_outrider }
+  FIND_CANDIDATES.out.hpo_ranking_ase.set{ hpo_ranking_ase }
+  FIND_CANDIDATES.out.hpo_ranking_integrated.set{ hpo_ranking_integrated }
 
 }
