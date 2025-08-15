@@ -291,6 +291,14 @@ else:
         
         genes_rank.loc[idx, 'hpo_overlap'] = overlap
     
-    genes_rank.sort_values(['hpo_overlap', pval_column], ascending=False, inplace=True)
+    ### Sort
+    
+    genes_rank.loc[:, '-log10(pval)'] = - np.log10(genes_rank[pval_column].values + 1e-6)
+    
+    genes_rank.sort_values(['hpo_overlap', '-log10(pval)'], ascending=False, inplace=True)
+    
+    genes_rank = genes_rank.drop('-log10(pval)', axis=1)
+    
+    ### Save to file
     
     genes_rank.to_csv(f'gene_ranks_with_hpo-{genes_rank_type}.tsv.gz', sep='\t', index=False, header=True)
