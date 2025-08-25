@@ -95,7 +95,17 @@ def merge_data(a_s, a_e, a_i, cols, metric='final_pval'):
 
     all_dt[cols] = all_dt[cols].astype('float64')
 
-    all_dt[cols] = all_dt[cols].fillna(1)
+    # Fill NA values
+
+    na_replacement = (1 if metric == 'final_pval' else 1e-10)
+
+    all_dt[cols] = all_dt[cols].fillna(na_replacement)
+
+    # Metric geometric mean (with 0 replacement)
+
+    zero_replacement = 1e-10
+
+    all_dt[cols] = all_dt[cols].replace(0, 1e-10)
 
     all_dt[metric] = np.power(np.prod(all_dt[cols].abs(), axis=1), 1 / len(cols))
 

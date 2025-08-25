@@ -136,3 +136,15 @@ OUTRIDER (included in the docker image)
 - OUTRIDER is included in the docker image;
 
 - SPOT was updated to use pystan 3;
+
+- Useful scripts to extract results can be found in scripts/utils
+
+/// --------------------------------------- ///
+
+### RECOMMENDATIONS:
+
+- For LeafcutterMD, if a trio is present, the control cohort could be omitted, but still best to have it to account for cases the aberrant splicing is "inherited" from a parent;
+
+- For HPO interpolation, it's best to only use key HPO terms rather than secondary clinical manifestations;
+
+- The final ranking is dependent on HPO terms, so candidates from WGS analyses may score low if the phenotype overlap is only partial or if the HPO annotation is lacking.
