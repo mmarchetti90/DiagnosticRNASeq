@@ -160,6 +160,7 @@ for sample_id,sample_summary in summary.items():
                labels=[col.replace('_with_hpo', '\nwith_hpo').replace('_without_hpo', '\nwithout_hpo').replace('_', ' ') for col in heatmap_col],
                fontweight='bold')
     plt.yticks(fontweight='bold')
+    plt.tight_layout()
     plt.savefig(f'{sample_id}_ranks_summary.png', dpi=300)
     plt.close()
     
