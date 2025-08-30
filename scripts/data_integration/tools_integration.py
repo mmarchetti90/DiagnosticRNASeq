@@ -105,7 +105,7 @@ def merge_data(a_s, a_e, a_i, cols, metric='final_pval'):
 
     zero_replacement = 1e-10
 
-    all_dt[cols] = all_dt[cols].replace(0, 1e-10)
+    all_dt[cols] = all_dt[cols].replace(0, zero_replacement)
 
     all_dt[metric] = np.power(np.prod(all_dt[cols].abs(), axis=1), 1 / len(cols))
 

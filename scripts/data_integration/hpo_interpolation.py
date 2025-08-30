@@ -118,61 +118,76 @@ def kneedle(vector, sort_vector=True):
 
 ### ---------------------------------------- ###
 
-def hpo_overlap(hierarchy, targets, hits, max_dist):
+def hpo_distances(hierarchy, targets, hits, max_distance=3):
     
-    target_hits, overlap = {}, 0
+    distances = []
     
-    for h in hits:
+    for t in targets:
         
-        if h in targets:
-            
-            target_hits[h] = 0
+        # Processing hits that are parents of t
         
-        else:
-            
-            h_parents = get_parent_terms([h], hierarchy)
-            
-            h_children = get_children_terms([h], hierarchy)
-            
-            min_dist = ('', max_dist + 1)
-            
-            for t in targets:
-                
-                if t in h_parents:
-                    
-                    dist = get_parent_child_distance(t, h, hierarchy)
-                    
-                    if dist < min_dist[1]:
-                        
-                        min_dist = (t, dist)
-                
-                elif t in h_children:
-
-                    dist = get_parent_child_distance(h, t, hierarchy)
-                    
-                    if dist < min_dist[1]:
-                        
-                        min_dist = (t, dist)
-                    
-                else:
-                    
-                    continue
-            
-            if min_dist[1] <= max_dist:
-                
-                if min_dist[0] not in target_hits.keys():
-                    
-                    target_hits[min_dist[0]] = min_dist[1]
-                
-                else:
-                    
-                    if min_dist[1] < target_hits[min_dist[0]]:
-                        
-                        target_hits[min_dist[0]] = min_dist[1]
-            
-    overlap = len(target_hits) / len(targets)
+        t_parents = get_parent_terms([t], hierarchy)
         
-    return target_hits, overlap
+        hits_sub_1 = [h for h in hits if h in t_parents]
+        
+        for hs in hits_sub_1:
+            
+            dist = get_parent_child_distance(hs, t, hierarchy)
+            
+            if dist <= max_distance:
+            
+                distances.append([hs, t, dist, 'y'])
+        
+        # Processing hits that are children of t
+        
+        t_childrens = get_children_terms([t], hierarchy)
+        
+        hits_sub_2 = [h for h in hits if h in t_childrens and h != t]
+        
+        for hs in hits_sub_2:
+            
+            dist = get_parent_child_distance(t, hs, hierarchy)
+            
+            if dist <= max_distance:
+            
+                distances.append([hs, t, dist, 'y'])
+        
+        # Processing terms from other branches
+        
+        for hs in hits:
+            
+            if hs in (hits_sub_1 + hits_sub_2):
+                
+                continue
+            
+            _, dist = find_closest_common_ancestor(hs, t, hierarchy)
+            
+            if dist <= max_distance:
+                
+                distances.append([hs, t, dist, 'n'])
+    
+    distances = pd.DataFrame(distances, columns=['hit_hpo', 'target_hpo', 'distance', 'same_branch'])
+    
+    # Cleanup so that each hit HPO is associated with only the closest HPO term
+    # N.B. target terms in the same branch as the hit are prioritized
+    
+    distances_cleaned = []
+    
+    for h in np.unique(distances['hit_hpo'].values):
+        
+        distances_sub = distances.loc[distances['hit_hpo'] == h,].copy()
+    
+        distances_sub = distances_sub.replace({'same_branch' : {'y' : '0', 'n' : '1'}})
+    
+        distances_sub = distances_sub.sort_values(by=['same_branch', 'distance'], ascending=True)
+        
+        distances_cleaned.append(distances_sub.iloc[0,].values)
+    
+    distances_cleaned = pd.DataFrame(distances_cleaned, columns=['hit_hpo', 'target_hpo', 'distance', 'same_branch'])
+    
+    distances_cleaned = distances_cleaned.replace({'same_branch' : {'0' : 'y', '1' : 'n'}})
+    
+    return distances_cleaned
 
 ### ---------------------------------------- ###
 
@@ -224,6 +239,38 @@ def get_parent_child_distance(p, c, parent_child):
 
 ### ---------------------------------------- ###
 
+def find_closest_common_ancestor(element_1, element_2, parent_child):
+    
+    # Get ancestors in common
+    
+    parents_1 = get_parent_terms([element_1], parent_child)
+    
+    parents_2 = get_parent_terms([element_2], parent_child)
+    
+    common_ancestors = [p1 for p1 in parents_1 if p1 in parents_2 and p1 != '']
+    
+    # Find shortest distance
+    
+    elements_distance = []
+    
+    for ca in common_ancestors:
+        
+        distance_1 = get_parent_child_distance(ca, element_1, parent_child)
+        
+        distance_2 = get_parent_child_distance(ca, element_2, parent_child)
+        
+        elements_distance.append((ca, distance_1 + distance_2 + 1))
+    
+    elements_distance.sort(key=lambda ed: ed[1])
+    
+    # Closest ancestor
+    
+    closest_ancestor = elements_distance[0]
+    
+    return closest_ancestor
+
+### ---------------------------------------- ###
+
 import pandas as pd
 import numpy as np
 
@@ -233,7 +280,7 @@ from sys import argv
 
 hpo_id_to_name, hpo_hierarchy, target_hpo_terms, genes2hpo, genes_rank, genes_rank_type = parse_args()
 
-### Cutoff final_pval using a kneedle (but keep N genes max)
+### Processing
 
 if genes_rank.shape[0] == 0:
     
@@ -242,6 +289,8 @@ if genes_rank.shape[0] == 0:
     genes_rank.to_csv(f'gene_ranks_with_hpo-{genes_rank_type}.tsv.gz', sep='\t', index=False, header=True)
 
 else:
+    
+    ### Cutoff final_pval using a kneedle (but keep N genes max)
     
     rank_type_pval_columns = {'integrated_data' : 'final_pval',
                               'aberrant_splicing' : 'clusters_min_pval',
@@ -258,19 +307,28 @@ else:
     
     genes_rank = genes_rank.loc[minus_log_pval >= thr,]
     
-    N = 2000
+    N = 3000
     
     genes_rank = genes_rank.iloc[:N,]
     
-    ### Score genes based on HPO overlap
+    ### Init score matrix for HPO terms
     
     # N.B. Genes may be associated with an HPO term with a certain hierarchical distance from a targer
     # one. Only terms with distance < 3 nodes will be considered
     
     max_branch_length = 3
+
+    hpo_hits = genes2hpo.loc[genes2hpo['gene_symbol'].isin(genes_rank['gene_symbol']), 'hpo_id'].values
+    
+    hpo_hits = np.unique(hpo_hits)
+
+    hit_hpo_distances_to_target = hpo_distances(hpo_hierarchy, target_hpo_terms, hpo_hits, max_branch_length)
+    
+    ### Score genes based on HPO overlap
     
     genes_rank.loc[:, 'hpo_hits'] = np.repeat('', genes_rank.shape[0])
     genes_rank.loc[:, 'hpo_hits_distance'] = np.repeat('', genes_rank.shape[0])
+    genes_rank.loc[:, 'hpo_hits_same_branch'] = np.repeat('', genes_rank.shape[0])
     genes_rank.loc[:, 'hpo_overlap'] = np.repeat(0., genes_rank.shape[0])
     
     genes_rank = genes_rank.reset_index(drop=True)
@@ -281,15 +339,33 @@ else:
             
             continue
         
+        # Get gene's HPO
+        
         gene_hpo = genes2hpo.loc[genes2hpo['gene_symbol'] == gene_info['gene_symbol'], 'hpo_id'].values
         
-        target_hits, overlap = hpo_overlap(hpo_hierarchy, target_hpo_terms, gene_hpo, max_branch_length)
+        # Find hits between the gene's HPO terms and the target HPO terms
         
-        genes_rank.loc[idx, 'hpo_hits'] = ';'.join(target_hits.keys())
+        gene_hpo_hits = hit_hpo_distances_to_target.loc[hit_hpo_distances_to_target['hit_hpo'].isin(gene_hpo),]
         
-        genes_rank.loc[idx, 'hpo_hits_distance'] = ';'.join([str(v) for v in target_hits.values()])
+        # Cleanup
         
-        genes_rank.loc[idx, 'hpo_overlap'] = overlap
+        gene_hpo_hits = gene_hpo_hits.replace({'same_branch' : {'y' : '0', 'n' : '1'}})
+        
+        gene_hpo_hits = gene_hpo_hits.sort_values(by=['target_hpo', 'same_branch', 'distance'], ascending=True)
+        
+        gene_hpo_hits = gene_hpo_hits.drop_duplicates('target_hpo', keep='first')
+        
+        gene_hpo_hits = gene_hpo_hits.replace({'same_branch' : {'0' : 'y', '1' : 'n'}})
+        
+        # Annotated
+        
+        genes_rank.loc[idx, 'hpo_hits'] = ';'.join(gene_hpo_hits['target_hpo'].values)
+        
+        genes_rank.loc[idx, 'hpo_hits_distance'] = ';'.join([str(d) for d in gene_hpo_hits['distance'].values])
+        
+        genes_rank.loc[idx, 'hpo_hits_same_branch'] = ';'.join(gene_hpo_hits['same_branch'].values)
+        
+        genes_rank.loc[idx, 'hpo_overlap'] = gene_hpo_hits.shape[0] / len(target_hpo_terms)
     
     ### Sort
     

@@ -143,8 +143,8 @@ OUTRIDER (included in the docker image)
 
 ### RECOMMENDATIONS:
 
-- For LeafcutterMD, if a trio is present, the control cohort could be omitted, but still best to have it to account for cases the aberrant splicing is "inherited" from a parent;
+- For LeafcutterMD, if a trio is present, the control cohort could potentially be omitted. In practice, it doesn't seem to work well with just a trio and many splicing aberrations are masked (e.g. when the aberrant splicing is "inherited" from a parent).
 
-- For HPO interpolation, it's best to only use key HPO terms rather than secondary clinical manifestations;
+- For HPO interpolation, it's best to only use key HPO terms rather than secondary clinical manifestations. Also, make sure the annotation is correctly capturing the phenotype.
 
 - The final ranking is dependent on HPO terms, so candidates from WGS analyses may score low if the phenotype overlap is only partial or if the HPO annotation is lacking.

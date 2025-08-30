@@ -4,7 +4,6 @@ Allelic imbalance
 
 // ----------------Workflow---------------- //
 
-include { IndexVcfGATK as IndexGenomicVcf } from '../../modules/local/indexing/index_vcf_gatk.nf'
 include { SelectVariants } from '../../modules/local/variant_calling/select_variants.nf'
 include { IndexVcfGATK as IndexSubVcf } from '../../modules/local/indexing/index_vcf_gatk.nf'
 include { AseCounter } from '../../modules/local/allelic_imbalance/ase_counter.nf'
@@ -20,41 +19,11 @@ workflow ALLELIC_IMBALANCE {
   gatk_dict
   sample_ids
   mrkdup_indexed_bam
-  joint_rna_vcf
+  joint_vcf
+  joint_vcf_index
 
   main:
   // SELECT VARIANTS ---------------------- //
-
-  // If a genomic VCF is provided, it will be preferred, otherwise the RNA VCF will be used instead
-  if (new File("${params.genomic_vcf_path}").exists()) {
-
-    Channel
-      .fromPath("${params.genomic_vcf_path}")
-      .map{ g -> tuple("genomic_joint_calling", file(g)) }
-      .set{ joint_genomic_vcf }
-
-    IndexGenomicVcf(joint_genomic_vcf)
-
-    joint_genomic_vcf
-      .map{ it[1] }
-      .set{ joint_vcf }
-
-    IndexGenomicVcf.out.vcf_index
-      .map{ it[1] }
-      .set{ joint_vcf_index }
-
-  }
-  else {
-
-    joint_rna_vcf
-      .map{ it[1] }
-      .set{ joint_vcf }
-
-    joint_rna_vcf
-      .map{ it[2] }
-      .set{ joint_vcf_index }
-
-  }
 
   // Select variants
   SelectVariants(genome_fasta, genome_fasta_index, gatk_dict, joint_vcf, joint_vcf_index, sample_ids)

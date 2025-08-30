@@ -4,6 +4,10 @@ Workflow for diagnostic rnaseq analyses
 
 // ----------------Workflow---------------- //
 
+// Modules
+include { IndexVcfGATK as IndexGenomicVcf } from '../../modules/local/indexing/index_vcf_gatk.nf'
+
+// Subworkflows
 include { LOAD_RESOURCES } from '../../subworkflows/local/load_resources.nf'
 include { PREPROCESSING } from '../../subworkflows/local/preprocessing.nf'
 include { ABERRANT_SPLICING } from '../../subworkflows/local/aberrant_splicing.nf'
@@ -67,7 +71,39 @@ workflow RNA_DIAGNOSTIC {
 
   // ALLELIC IMBALANCE -------------------- //
 
-  ALLELIC_IMBALANCE(scripts_dir, genome_fasta, genome_fasta_index, genome_annotation, gatk_dict, sample_ids, mrkdup_indexed_bam, joint_rna_vcf)
+  // If a genomic VCF is provided, it will be preferred, otherwise the RNA VCF will be used instead
+  if (new File("${params.genomic_vcf_path}").exists()) {
+
+    Channel
+      .fromPath("${params.genomic_vcf_path}")
+      .map{ g -> tuple("genomic_joint_calling", file(g)) }
+      .set{ joint_genomic_vcf }
+
+    IndexGenomicVcf(joint_genomic_vcf)
+
+    joint_genomic_vcf
+      .map{ it[1] }
+      .set{ joint_vcf }
+
+    IndexGenomicVcf.out.vcf_index
+      .map{ it[1] }
+      .set{ joint_vcf_index }
+
+  }
+  else {
+
+    joint_rna_vcf
+      .map{ it[1] }
+      .set{ joint_vcf }
+
+    joint_rna_vcf
+      .map{ it[2] }
+      .set{ joint_vcf_index }
+
+  }
+
+  // Subworkflow run
+  ALLELIC_IMBALANCE(scripts_dir, genome_fasta, genome_fasta_index, genome_annotation, gatk_dict, sample_ids, mrkdup_indexed_bam, joint_vcf, joint_vcf_index)
 
   ALLELIC_IMBALANCE.out.ase_snp_stats.set{ ase_snp_stats }
   ALLELIC_IMBALANCE.out.ase_gene_stats.set{ ase_gene_stats }

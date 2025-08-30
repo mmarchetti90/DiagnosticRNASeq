@@ -34,30 +34,30 @@ process IntronClustering {
     python3 ${scripts_dir}/leafcutter/leafcutter_cluster.py -j juncfiles.txt -m 50 -o intronclust -l 500000
 
     # Batch correction
-    if (( \$samples_num > 1 ))
-    then
-
-        if (( \$control_junc_num > 0 ))
-        then
-
-            mv intronclust_perind_numers.counts.gz raw_intronclust_perind_numers.counts.gz
-            
-            # Create list of ctrl_ids
-            touch ctrl_ids.txt
-            for ctrl in ${control_junc_dir}/*.junc
-            do
-
-                basename -s .junc \${ctrl} >> ctrl_ids.txt
-
-            done
-
-            # Batch correction
-            Rscript ${scripts_dir}/leafcutter/intronclust_batch_correction.R --counts raw_intronclust_perind_numers.counts.gz --ctrl_ids_list ctrl_ids.txt
-            mv corrected_intronclust_perind_numers.counts.gz intronclust_perind_numers.counts.gz
-
-        fi
-
-    fi
+    #if (( \$samples_num > 1 ))
+    #then
+    #
+    #    if (( \$control_junc_num > 0 ))
+    #    then
+    #
+    #        mv intronclust_perind_numers.counts.gz raw_intronclust_perind_numers.counts.gz
+    #        
+    #        # Create list of ctrl_ids
+    #        touch ctrl_ids.txt
+    #        for ctrl in ${control_junc_dir}/*.junc
+    #        do
+    #
+    #            basename -s .junc \${ctrl} >> ctrl_ids.txt
+    #
+    #        done
+    #
+    #        # Batch correction
+    #        Rscript ${scripts_dir}/leafcutter/intronclust_batch_correction.R --counts raw_intronclust_perind_numers.counts.gz --ctrl_ids_list ctrl_ids.txt
+    #        mv corrected_intronclust_perind_numers.counts.gz intronclust_perind_numers.counts.gz
+    #
+    #    fi
+    #
+    #fi
     """
 
 }
