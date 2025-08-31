@@ -83,7 +83,7 @@ def parse_obo(obo_file):
 
 ### ---------------------------------------- ###
 
-def hpo_overlap(hpo_id_to_name_dict, hierarchy, targets, hits):
+def hpo_overlap(hpo_id_to_name_dict, hierarchy, hits, targets):
     
     impossible_distance = 100000
     
