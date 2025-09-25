@@ -4,7 +4,7 @@ process IndexFastaSamtools {
   
   label 'samtools'
 
-  publishDir "${projectDir}/${params.resources_dir}/${params.fasta_index_subdir}", mode: "copy", pattern: "*.fai"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.resources_dir}/${params.fasta_index_subdir}", mode: "copy", pattern: "*.fai"
 
   input:
   path reference_fasta

@@ -301,11 +301,23 @@ def cluster_terms(terms, hierarchy, distances, max_distance=3):
             
             log.append(f'Merged clusters {clusters_to_merge} into cluster {new_cluster_n}')
     
+    # Add unclustered terms as individual clusters
+    
+    for term,cl in clusters.items():
+        
+        if cl == -1:
+            
+            new_cl = max(clusters.values()) + 1
+            
+            clusters[term] = new_cl
+            
+            clusters_parents[new_cl] = term
+    
     # Re-index clusters
     
     reindexing = {old : new for new,old in enumerate(np.sort(list(clusters_parents.keys())))}
     
-    clusters = {h : reindexing[cl] for h,cl in clusters.items()}
+    clusters = {h : reindexing[cl] for h,cl in clusters.items() if cl != -1}
     
     clusters_parents = {reindexing[cl] : h for cl,h in clusters_parents.items()}
 

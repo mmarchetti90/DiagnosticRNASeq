@@ -71,6 +71,10 @@ workflow RNA_DIAGNOSTIC {
 
   // ALLELIC IMBALANCE -------------------- //
 
+  /*
+
+  // THIS SECTION IS COMMENTED OUT TO MAKE PIPELINE FASTER SINCE FOR OUR PROJECTS WE ALWAYS HAVE A GENOMIC VCF
+
   // If a genomic VCF is provided, it will be preferred, otherwise the RNA VCF will be used instead
   if (new File("${params.genomic_vcf_path}").exists()) {
 
@@ -101,6 +105,23 @@ workflow RNA_DIAGNOSTIC {
       .set{ joint_vcf_index }
 
   }
+  */
+
+  // This replaces the commented section above
+  Channel
+    .fromPath("${params.genomic_vcf_path}")
+    .map{ g -> tuple("genomic_joint_calling", file(g)) }
+    .set{ joint_genomic_vcf }
+
+  IndexGenomicVcf(joint_genomic_vcf)
+
+  joint_genomic_vcf
+    .map{ it[1] }
+    .set{ joint_vcf }
+
+  IndexGenomicVcf.out.vcf_index
+    .map{ it[1] }
+    .set{ joint_vcf_index }
 
   // Subworkflow run
   ALLELIC_IMBALANCE(scripts_dir, genome_fasta, genome_fasta_index, genome_annotation, gatk_dict, sample_ids, mrkdup_indexed_bam, joint_vcf, joint_vcf_index)

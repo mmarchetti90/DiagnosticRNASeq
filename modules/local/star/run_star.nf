@@ -4,9 +4,9 @@ process RunSTAR {
 
   label 'star'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*{Unmapped,SJ}*"
-  publishDir "${projectDir}/${params.gene_counts_dir}", mode: "copy", pattern: "*_ReadsPerGene.out.tab"
-  publishDir "${projectDir}/${params.qc_dir}/${params.star_subdir}", mode: "copy", pattern: "*Log*"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*{Unmapped,SJ}*"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.gene_counts_dir}", mode: "copy", pattern: "*_ReadsPerGene.out.tab"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.qc_dir}/${params.star_subdir}", mode: "copy", pattern: "*Log*"
 
   input:
   each path(index)

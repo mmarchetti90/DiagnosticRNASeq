@@ -4,7 +4,7 @@ process CombineGVCFs {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.variants_out}", mode: "copy", pattern: "joint_calling.g.vcf.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.variants_out}", mode: "copy", pattern: "joint_calling.g.vcf.gz"
 
   input:
   path reference_fasta

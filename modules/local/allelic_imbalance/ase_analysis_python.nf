@@ -4,7 +4,7 @@ process AseAnalysisPython {
   
   label 'python'
 
-  publishDir "${projectDir}/${params.allelic_imbalance_out}", mode: "copy", pattern: "*_ase_{snp,gene}_stats.tsv.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.allelic_imbalance_out}", mode: "copy", pattern: "*_ase_{snp,gene}_stats.tsv.gz"
 
   input:
   each path(scripts_dir)

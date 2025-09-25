@@ -4,7 +4,7 @@ process AseCounter {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.allelic_imbalance_out}", mode: "copy", pattern: "*_ASE.tsv"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.allelic_imbalance_out}", mode: "copy", pattern: "*_ASE.tsv"
 
   input:
   each path(reference_fasta)

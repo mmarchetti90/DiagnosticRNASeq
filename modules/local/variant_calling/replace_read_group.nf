@@ -4,7 +4,7 @@ process ReplaceReadGroup {
   
   label 'variantcalling'
 
-  //publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*_rg.bam"
+  //publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*_rg.bam"
 
   input:
   tuple val(sample_id), path(bam), path(bai)

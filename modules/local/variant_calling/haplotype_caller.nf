@@ -4,7 +4,7 @@ process HaplotypeCaller {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.variants_out}", mode: "copy", pattern: "*_gatk.g.vcf.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.variants_out}", mode: "copy", pattern: "*_gatk.g.vcf.gz"
 
   input:
   each path(reference_fasta)

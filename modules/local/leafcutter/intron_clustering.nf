@@ -4,8 +4,8 @@ process IntronClustering {
 
     label 'leafcutter'
 
-    publishDir "${projectDir}/${params.intron_clusters_dir}", mode: "copy", pattern: "raw_intronclust_perind_numers.counts.gz"
-    publishDir "${projectDir}/${params.intron_clusters_dir}", mode: "copy", pattern: "intronclust_perind_numers.counts.gz"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.intron_clusters_dir}", mode: "copy", pattern: "raw_intronclust_perind_numers.counts.gz"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.intron_clusters_dir}", mode: "copy", pattern: "intronclust_perind_numers.counts.gz"
 
     input:
     path scripts_dir

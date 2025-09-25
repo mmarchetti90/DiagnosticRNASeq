@@ -4,7 +4,7 @@ process IndexBam {
   
   label 'samtools'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*.bai"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*.bai"
 
   input:
   tuple val(sample_id), path(bam)

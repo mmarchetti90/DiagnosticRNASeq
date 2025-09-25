@@ -4,7 +4,7 @@ process MergeCounts {
 
     label 'local'
 
-    publishDir "${projectDir}/${params.gene_counts_dir}", mode: 'copy', pattern: "MergedGeneCounts.tsv"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.gene_counts_dir}", mode: 'copy', pattern: "MergedGeneCounts.tsv"
 
     input:
     path count_files

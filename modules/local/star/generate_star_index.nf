@@ -4,7 +4,7 @@ process GenerateStarIndex {
 
   label 'star'
 
-  publishDir "${projectDir}/${params.resources_dir}", mode: "copy", pattern: "${params.star_index_subdir}"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.resources_dir}", mode: "copy", pattern: "${params.star_index_subdir}"
 
   input:
   path genome_fasta

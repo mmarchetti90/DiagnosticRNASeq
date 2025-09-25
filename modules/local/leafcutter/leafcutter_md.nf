@@ -4,7 +4,7 @@ process LeafcutterMD {
 
     label 'leafcutter'
 
-    publishDir "${projectDir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*.txt"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*.txt"
 
     input:
     path scripts_dir

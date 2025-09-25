@@ -4,7 +4,7 @@ process ToolsIntegration {
   
   label 'python'
 
-  publishDir "${projectDir}/${params.data_integration_out}", mode: "copy", pattern: "*_gene_ranks.tsv.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.data_integration_out}", mode: "copy", pattern: "*_gene_ranks.tsv.gz"
 
   input:
   each path(scripts_dir)

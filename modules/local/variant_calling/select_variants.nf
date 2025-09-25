@@ -4,7 +4,7 @@ process SelectVariants {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.variants_out}", mode: "copy", pattern: "*_select.vcf.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.variants_out}", mode: "copy", pattern: "*_select.vcf.gz"
 
   input:
   each path(reference_fasta)

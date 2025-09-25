@@ -4,7 +4,7 @@ process RunFastQC {
 
   label 'fastqc'
 
-  publishDir "${projectDir}/${params.qc_dir}/${params.fastqc_subdir}", mode: "copy", pattern: "*_fastqc.{html,zip}"
+  publishDir "${projectDir}/${params.qc_dir}/${params.main_output_dir}/${params.fastqc_subdir}", mode: "copy", pattern: "*_fastqc.{html,zip}"
 
   input:
   tuple val(sample_id), path(read1), path(read2)

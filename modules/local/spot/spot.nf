@@ -4,7 +4,7 @@ process Spot {
 
     label 'leafcutter'
 
-    publishDir "${projectDir}/${params.spot_out}", mode: "copy", pattern: "spot_*.txt"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.spot_out}", mode: "copy", pattern: "spot_*.txt"
 
     input:
     path scripts_dir

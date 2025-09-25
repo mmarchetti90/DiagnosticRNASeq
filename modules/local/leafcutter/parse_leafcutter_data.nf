@@ -4,8 +4,8 @@ process ParseLeafcutter {
   
   label 'python'
 
-  publishDir "${projectDir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*_splicing_stats.tsv.gz"
-  publishDir "${projectDir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*_aberrant_splicing.tsv.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*_splicing_stats.tsv.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.leafcuttermd_out}", mode: "copy", pattern: "*_aberrant_splicing.tsv.gz"
 
   input:
   each path(scripts_dir)

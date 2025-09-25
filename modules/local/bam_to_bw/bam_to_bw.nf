@@ -4,7 +4,7 @@ process BamToBW {
   
   label 'deeptools'
 
-  publishDir "${projectDir}/${params.qc_dir}/${params.bw_subdir}", mode: "copy", pattern: "*.{bw,log}"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.qc_dir}/${params.bw_subdir}", mode: "copy", pattern: "*.{bw,log}"
 
   input:
   tuple val(sample_id), path(bam), path(bai)

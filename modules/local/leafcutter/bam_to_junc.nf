@@ -4,7 +4,7 @@ process BamToJunc {
 
     label 'leafcutter'
 
-    publishDir "${projectDir}/${params.junc_dir}", mode: "copy", pattern: "*.junc"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.junc_dir}", mode: "copy", pattern: "*.junc"
 
     input:
     each path(scripts_dir)

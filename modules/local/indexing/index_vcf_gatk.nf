@@ -4,7 +4,7 @@ process IndexVcfGATK {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.variants_out}", mode: "copy", pattern: "*.tbi"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.variants_out}", mode: "copy", pattern: "*.tbi"
 
   input:
   tuple val(sample_id), path(vcf)

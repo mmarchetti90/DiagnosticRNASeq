@@ -4,7 +4,7 @@ process SplitNCigarReads {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*.{bam,bai}"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*.{bam,bai}"
 
   input:
   each path(reference_fasta)

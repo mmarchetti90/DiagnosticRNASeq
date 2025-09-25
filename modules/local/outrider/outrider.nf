@@ -4,7 +4,7 @@ process Outrider {
 
     label 'outrider'
 
-    publishDir "${projectDir}/${params.outrider_out}", mode: 'copy', pattern: "*.{tsv,rds}"
+    publishDir "${projectDir}/${params.main_output_dir}/${params.outrider_out}", mode: 'copy', pattern: "*.{tsv,rds}"
 
     input:
     path scripts_dir

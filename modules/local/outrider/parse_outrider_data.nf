@@ -4,7 +4,7 @@ process ParseOutrider {
   
   label 'python'
 
-  publishDir "${projectDir}/${params.outrider_out}", mode: "copy", pattern: "*_aberrant_expression.tsv.gz"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.outrider_out}", mode: "copy", pattern: "*_aberrant_expression.tsv.gz"
 
   input:
   each path(scripts_dir)

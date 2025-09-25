@@ -4,8 +4,8 @@ process MarkDuplicates {
   
   label 'variantcalling'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*_mrkdup.bam"
-  publishDir "${projectDir}/${params.qc_dir}/${params.duplication_subdir}", mode: "copy", pattern: "*_marked_dup_metrics.txt"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*_mrkdup.bam"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.qc_dir}/${params.duplication_subdir}", mode: "copy", pattern: "*_marked_dup_metrics.txt"
 
   input:
   tuple val(sample_id), path(bam)

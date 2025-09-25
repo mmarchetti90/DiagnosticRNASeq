@@ -4,7 +4,7 @@ process SortBam {
 
   label 'samtools'
 
-  publishDir "${projectDir}/${params.bam_dir}", mode: "copy", pattern: "*_Aligned.sortedByCoord.out.bam"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.bam_dir}", mode: "copy", pattern: "*_Aligned.sortedByCoord.out.bam"
 
   input:
   tuple val(sample_id), path(bam)
