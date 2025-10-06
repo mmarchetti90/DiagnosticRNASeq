@@ -4,7 +4,7 @@ process ParseSourceFile {
 
   label 'local'
 
-  publishDir "${params.resources_dir}/${params.main_output_dir}/${params.reads_list_subdir}", mode: "copy", pattern: "*{txt,tsv}"
+  publishDir "${projectDir}/${params.main_output_dir}/${params.resources_dir}/${params.reads_list_subdir}", mode: "copy", pattern: "*{txt,tsv}"
   
   input:
   path scripts_dir
