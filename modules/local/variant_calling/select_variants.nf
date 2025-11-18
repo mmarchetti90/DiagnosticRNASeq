@@ -25,7 +25,13 @@ process SelectVariants {
   -select 'vc.getGenotype("${sample_id}").isHet()' \
   --select-type-to-include SNP \
   --sample-name ${sample_id} \
-  -O ${sample_id}_select.vcf
+  -O ${sample_id}_tmp.vcf
+
+  bcftools norm \
+  --rm-dup all \
+  -o ${sample_id}_select.vcf \
+  -O v \
+  ${sample_id}_tmp.vcf
 
   bgzip ${sample_id}_select.vcf
   """
