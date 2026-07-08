@@ -55,27 +55,47 @@ workflow LOAD_RESOURCES {
   MakeGATKDict(genome_fasta)
 
   // Control cohort data
-  Channel
-    .fromPath("${params.control_cohort_junc_dir}")
-    .ifEmpty("${projectDir}/modules")
-    .set{ control_junc_dir }
+  if (params.rna_workflow) {
 
-  Channel
-    .fromPath("${params.control_cohort_counts_dir}")
-    .ifEmpty("${projectDir}/modules")
-    .set{ control_gene_counts_dir }
+    Channel
+      .fromPath("${params.control_cohort_junc_dir}")
+      .ifEmpty("${projectDir}/modules")
+      .set{ control_junc_dir }
+
+    Channel
+      .fromPath("${params.control_cohort_counts_dir}")
+      .ifEmpty("${projectDir}/modules")
+      .set{ control_gene_counts_dir }
+
+  } else {
+
+    control_junc_dir = Channel.fromPath("${projectDir}/modules")
+
+    control_gene_counts_dir = Channel.fromPath("${projectDir}/modules")
+
+  }
   
   // Creating channel for HPO obo file
-  Channel
-    .fromPath("${params.hpo_obo_path}")
-    .ifEmpty("mock.hpo.obo")
-    .set{ hpo_obo }
+  if (params.rna_workflow) {
 
-  // Creating channel for genes to phenotype file
-  Channel
-    .fromPath("${params.genes_to_phenotype_path}")
-    .ifEmpty("mock.genes_to_phenotype.txt")
-    .set{ genes_to_phenotype }
+    Channel
+      .fromPath("${params.hpo_obo_path}")
+      .ifEmpty("mock.hpo.obo")
+      .set{ hpo_obo }
+
+    // Creating channel for genes to phenotype file
+    Channel
+      .fromPath("${params.genes_to_phenotype_path}")
+      .ifEmpty("mock.genes_to_phenotype.txt")
+      .set{ genes_to_phenotype }
+
+  } else {
+
+      hpo_obo = Channel.empty()
+
+      genes_to_phenotype = Channel.empty()
+
+  }
 
   // Parsing source file to output lists fastq files
   ParseSourceFile(scripts_dir, source_file)

@@ -18,7 +18,7 @@ process MarkDuplicates {
   # Mark duplicates
   gatk MarkDuplicates \
   -I ${bam} \
-  -O ${sample_id}_mrkdup.bam  \
+  -O ${sample_id}_mrkdup.bam \
   -M ${sample_id}_marked_dup_metrics.txt
   """
 

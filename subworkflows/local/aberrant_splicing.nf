@@ -25,22 +25,39 @@ workflow ABERRANT_SPLICING {
   // BAM to JUNC
   BamToJunc(scripts_dir, bam_files)
 
-  // Intron clustering
-  IntronClustering(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir)
+  if (params.rna_workflow) {
 
-  // LeafcutterMD
-  LeafcutterMD(scripts_dir, IntronClustering.out.intron_counts)
+    // Intron clustering
+    IntronClustering(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir)
 
-  // Parse LeafcutterMD output
-  ParseLeafcutter(scripts_dir, genome_annotation, LeafcutterMD.out.leafcutter_pvals, LeafcutterMD.out.leafcutter_effsize, LeafcutterMD.out.leafcutter_cl_pvals, sample_ids)
+    // LeafcutterMD
+    LeafcutterMD(scripts_dir, IntronClustering.out.intron_counts)
 
-  // SPOT
-  Spot(scripts_dir, IntronClustering.out.intron_counts)
+    // Parse LeafcutterMD output
+    ParseLeafcutter(scripts_dir, genome_annotation, LeafcutterMD.out.leafcutter_pvals, LeafcutterMD.out.leafcutter_effsize, LeafcutterMD.out.leafcutter_cl_pvals, sample_ids)
+
+    // SPOT
+    Spot(scripts_dir, IntronClustering.out.intron_counts)
+
+    // Structure outputs
+    parsed_leafcutter_stats = ParseLeafcutter.out.parsed_leafcutter_stats
+    parsed_leafcutter_data = ParseLeafcutter.out.parsed_leafcutter_data
+    spot_pvals = Spot.out.spot_pvals
+    spot_dists = Spot.out.spot_dists
+
+  } else {
+
+    parsed_leafcutter_stats = Channel.empty()
+    parsed_leafcutter_data = Channel.empty()
+    spot_pvals = Channel.empty()
+    spot_dists = Channel.empty()
+
+  }
 
   emit:
-  parsed_leafcutter_stats = ParseLeafcutter.out.parsed_leafcutter_stats
-  parsed_leafcutter_data = ParseLeafcutter.out.parsed_leafcutter_data
-  spot_pvals = Spot.out.spot_pvals
-  spot_dists = Spot.out.spot_dists
+  parsed_leafcutter_stats
+  parsed_leafcutter_data
+  spot_pvals
+  spot_dists
 
 }

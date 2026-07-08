@@ -68,13 +68,16 @@ workflow PREPROCESSING {
   MergeCounts(RunSTAR.out.gene_counts.collect(), control_gene_counts_dir)
 
   // GENERATING USEFUL FILES -------------- //
+  if (params.rna_workflow) {
 
-  // Create bed file of STAR SJ for IGV
-  MakeIgvSjBed(scripts_dir, RunSTAR.out.star_sj)
+    // Create bed file of STAR SJ for IGV
+    MakeIgvSjBed(scripts_dir, RunSTAR.out.star_sj)
 
-  // Bam to bigWig
-  BamToBW(indexed_bam)
+    // Bam to bigWig
+    BamToBW(indexed_bam)
 
+  }
+  
   emit:
   indexed_bam
   merged_counts = MergeCounts.out.merged_counts
