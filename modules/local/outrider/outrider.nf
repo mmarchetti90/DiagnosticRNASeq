@@ -16,7 +16,7 @@ process Outrider {
     path "outrider_analysis.rds", optional: true
 
     """
-    if [[ "${ctrl_ids}" == "mock.txt" ]]
+    if [[ "${ctrl_ids}" == "mock.filtered.txt" ]]
     then
 
         Rscript ${scripts_dir}/outrider/outrider.R \

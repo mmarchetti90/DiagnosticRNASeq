@@ -11,6 +11,7 @@ include { RunSTAR } from '../../modules/local/star/run_star.nf'
 include { SortBam } from '../../modules/local/star/sort_bam.nf'
 include { IndexBam } from '../../modules/local/indexing/index_bam.nf'
 include { MergeCounts } from '../../modules/local/star/merge_counts.nf'
+include { SubsetGeneCountsControls } from '../../modules/local/outrider/select_controls_outrider.nf'
 include { MakeIgvSjBed } from '../../modules/local/igv_sj_bed/igv_sj_bed.nf'
 include { BamToBW } from '../../modules/local/bam_to_bw/bam_to_bw.nf'
 
@@ -67,6 +68,9 @@ workflow PREPROCESSING {
   // Merge gene count files
   MergeCounts(RunSTAR.out.gene_counts.collect(), control_gene_counts_dir)
 
+  // Subset controls
+  SubsetGeneCountsControls(scripts_dir, MergeCounts.out.merged_counts, MergeCounts.out.control_gene_counts_ids)
+
   // GENERATING USEFUL FILES -------------- //
   if (params.rna_workflow) {
 
@@ -80,7 +84,7 @@ workflow PREPROCESSING {
   
   emit:
   indexed_bam
-  merged_counts = MergeCounts.out.merged_counts
-  control_gene_counts_ids = MergeCounts.out.control_gene_counts_ids
+  merged_counts = SubsetGeneCountsControls.out.merged_counts_filtered
+  control_gene_counts_ids = SubsetGeneCountsControls.out.control_gene_counts_ids_filtered
 
 }

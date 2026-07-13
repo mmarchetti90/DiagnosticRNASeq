@@ -5,6 +5,7 @@ Aberrant splicing with LeafcutterMD and Spot
 // ----------------Workflow---------------- //
 
 include { BamToJunc } from '../../modules/local/leafcutter/bam_to_junc.nf'
+include { SubsetJuncControls } from '../../modules/local/leafcutter/select_controls_leafcutter.nf'
 include { IntronClustering } from '../../modules/local/leafcutter/intron_clustering.nf'
 include { LeafcutterMD } from '../../modules/local/leafcutter/leafcutter_md.nf'
 include { ParseLeafcutter } from '../../modules/local/leafcutter/parse_leafcutter_data.nf'
@@ -27,8 +28,11 @@ workflow ABERRANT_SPLICING {
 
   if (params.rna_workflow) {
 
+    // Controls selection
+    SubsetJuncControls(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir)
+
     // Intron clustering
-    IntronClustering(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir)
+    IntronClustering(scripts_dir, BamToJunc.out.junc_file.collect(), control_junc_dir, SubsetJuncControls.out.selected_junc_controls)
 
     // LeafcutterMD
     LeafcutterMD(scripts_dir, IntronClustering.out.intron_counts)
