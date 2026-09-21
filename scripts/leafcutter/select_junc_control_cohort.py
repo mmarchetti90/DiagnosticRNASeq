@@ -67,6 +67,14 @@ def normalize_counts(cnts):
 
 ### ---------------------------------------- ###
 
+def scale_counts(cnts: pd.DataFrame) -> pd.DataFrame:
+    
+    cnts = (cnts - cnts.mean(axis=0)).div(cnts.std(axis=0))
+    
+    return cnts
+
+### ---------------------------------------- ###
+
 def reduce_dimensions(cnts: pd.DataFrame) -> tuple[PCA, pd.DataFrame, np.array, int]:
     
     # Fit PCA
@@ -169,8 +177,9 @@ if __name__ == '__main__':
     if all_junctions.shape[0]:
     
         # PCA
-        normalized_counts = normalize_counts(all_junctions[sample_ids + control_ids])
-        _, pca_data, explained_variance, optimal_components = reduce_dimensions(normalized_counts)
+        scaled_normalized_counts = normalize_counts(all_junctions[sample_ids + control_ids])
+        scaled_normalized_counts = scale_counts(scaled_normalized_counts)
+        _, pca_data, explained_variance, optimal_components = reduce_dimensions(scaled_normalized_counts)
         pca_data = pca_data.iloc[:, :optimal_components+1]
         
         # For each sample, find closest controls (weighted distance in PCA space)

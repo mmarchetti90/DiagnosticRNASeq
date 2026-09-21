@@ -25,7 +25,7 @@ process SubsetGeneCountsControls {
   """
   python3 ${scripts_dir}/outrider/select_gene_counts_control_cohort.py \
   --counts ${merged_counts} \
-  --controls ctrls.list \
+  --controls ${control_gene_counts_ids} \
   --min_reads ${params.outrider_ctrls_min_reads} \
   --max_ctrls ${params.outrider_ctrls_max}
   """

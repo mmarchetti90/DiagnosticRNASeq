@@ -69,7 +69,19 @@ workflow PREPROCESSING {
   MergeCounts(RunSTAR.out.gene_counts.collect(), control_gene_counts_dir)
 
   // Subset controls
-  SubsetGeneCountsControls(scripts_dir, MergeCounts.out.merged_counts, MergeCounts.out.control_gene_counts_ids)
+  if (params.rna_workflow) {
+    
+    // Subsetting gene counts controls
+    SubsetGeneCountsControls(scripts_dir, MergeCounts.out.merged_counts, MergeCounts.out.control_gene_counts_ids)
+    merged_counts = SubsetGeneCountsControls.out.merged_counts_filtered
+    control_gene_counts_ids = SubsetGeneCountsControls.out.control_gene_counts_ids_filtered
+
+  } else {
+
+    merged_counts = MergeCounts.out.merged_counts
+    control_gene_counts_ids = MergeCounts.out.control_gene_counts_ids
+
+  }
 
   // GENERATING USEFUL FILES -------------- //
   if (params.rna_workflow) {
@@ -84,7 +96,7 @@ workflow PREPROCESSING {
   
   emit:
   indexed_bam
-  merged_counts = SubsetGeneCountsControls.out.merged_counts_filtered
-  control_gene_counts_ids = SubsetGeneCountsControls.out.control_gene_counts_ids_filtered
+  merged_counts
+  control_gene_counts_ids
 
 }
